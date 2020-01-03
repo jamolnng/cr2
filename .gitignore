@@ -56,3 +56,6 @@ tools/
 
 # vscode
 .vscode/
+
+# cmake
+build/
