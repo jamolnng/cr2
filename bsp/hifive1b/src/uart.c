@@ -4,21 +4,35 @@
 #include "gpio.h"
 
 void uart_init(uart_t instance, uint32_t baud) {
+  // enable GPIO functions
   uint32_t mask = (instance == 0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
-  baud = clock_freq() / baud - 1;
-
   uint32_t mmval = mmio_read_u32(instance, GPIO_REG_IOF_SEL);
   mmio_write_u32(instance, GPIO_REG_IOF_SEL, mmval & ~mask);
   mmval = mmio_read_u32(instance, GPIO_REG_IOF_EN);
   mmio_write_u32(instance, GPIO_REG_IOF_EN, mmval | mask);
 
+  // set baud divider
+  baud = clock_freq() / baud - 1;
   mmio_write_u32(instance, UART_REG_DIV, baud);
-  mmval = mmio_read_u32(instance, UART_REG_TX_CTRL);
 
   // enable RX and TX
-  mmio_write_u32(instance, UART_REG_TX_CTRL, mmval | 1);
+  mmval = mmio_read_u32(instance, UART_REG_TX_CTRL);
+  mmio_write_u32(instance, UART_REG_TX_CTRL, mmval | 1u);
   mmval = mmio_read_u32(instance, UART_REG_RX_CTRL);
-  mmio_write_u32(instance, UART_REG_RX_CTRL, mmval | 1);
+  mmio_write_u32(instance, UART_REG_RX_CTRL, mmval | 1u);
+}
+
+void uart_deinit(uart_t instance) {
+  // disable RX and TX
+  uint32_t mmval = mmio_read_u32(instance, UART_REG_TX_CTRL);
+  mmio_write_u32(instance, UART_REG_TX_CTRL, mmval & ~0x00000001ul);
+  mmval = mmio_read_u32(instance, UART_REG_RX_CTRL);
+  mmio_write_u32(instance, UART_REG_RX_CTRL, mmval & ~0x00000001ul);
+
+  // disable GPIO functions
+  uint32_t mask = (instance == 0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
+  mmval = mmio_read_u32(instance, GPIO_REG_IOF_EN);
+  mmio_write_u32(instance, GPIO_REG_IOF_EN, mmval & ~mask);
 }
 
 void uart_putc(uart_t instance, char c) {

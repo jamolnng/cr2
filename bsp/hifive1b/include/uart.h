@@ -16,6 +16,7 @@
 
 typedef enum uart_t { UART0 = UART0_CTRL_ADDR, UART1 = UART1_CTRL_ADDR } uart_t;
 void uart_init(uart_t instance, uint32_t baud);
+void uart_deinit(uart_t instance);
 void uart_putc(uart_t instance, char c);
 void uart_puts(uart_t instance, const char* str, int len);
 int uart_getc(uart_t instance);
