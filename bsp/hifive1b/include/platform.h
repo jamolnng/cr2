@@ -2,14 +2,14 @@
 #define __CR2_PLATFORM_H__
 
 #define read_csr(reg)                             \
-  ({                                              \
+  __extension__({                                 \
     unsigned long __tmp;                          \
     asm volatile("csrr %0, " #reg : "=r"(__tmp)); \
     __tmp;                                        \
   })
 
 #define write_csr(reg, val)                                     \
-  ({                                                            \
+  __extension__({                                               \
     if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
       asm volatile("csrw " #reg ", %0" ::"i"(val));             \
     else                                                        \
@@ -17,7 +17,7 @@
   })
 
 #define swap_csr(reg, val)                                             \
-  ({                                                                   \
+  __extension__({                                                      \
     unsigned long __tmp;                                               \
     if (__builtin_constant_p(val) && (unsigned long)(val) < 32)        \
       asm volatile("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
@@ -27,7 +27,7 @@
   })
 
 #define set_csr(reg, bit)                                              \
-  ({                                                                   \
+  __extension__({                                                      \
     unsigned long __tmp;                                               \
     if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32)        \
       asm volatile("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
@@ -37,7 +37,7 @@
   })
 
 #define clear_csr(reg, bit)                                            \
-  ({                                                                   \
+  __extension__({                                                      \
     unsigned long __tmp;                                               \
     if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32)        \
       asm volatile("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \

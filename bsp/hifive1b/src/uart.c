@@ -10,7 +10,6 @@ void uart_init(uart_t instance, uint32_t baud) {
   mmio(instance, GPIO_REG_IOF_EN) |= mask;
 
   // set baud divider
-  get_cpu_freq();
   baud = get_cpu_freq() / baud - 1;
   mmio(instance, UART_REG_DIV) = baud;
 
@@ -68,7 +67,7 @@ char* uart_gets(uart_t instance, char* str, int count) {
           cur = 0;
         }
       } else {
-        str[cur] = c;
+        str[cur] = (char)c;
         ++cur;
       }
     }

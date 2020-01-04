@@ -58,4 +58,20 @@ typedef enum spi_t {
 #define SPI_DIR_RX 0x0
 #define SPI_DIR_TX 0x1
 
+typedef struct spi_config_t {
+  uint32_t baud;
+  unsigned int protocol : 2;
+  unsigned int polarity : 1;
+  unsigned int phase : 1;
+  unsigned int endian : 1;
+  unsigned int cs_polarity : 1;
+  uint8_t csid;
+} spi_config_t;
+
+void spi_init(spi_t spi, spi_config_t* cfg);
+void spi_deinit(spi_t spi);
+void spi_putc(spi_t spi, char c);
+void spi_putb(spi_t spi, uint8_t b);
+void spi_write(spi_t spi, uint8_t* b, int count);
+
 #endif

@@ -16,7 +16,12 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -march=rv32imac -mabi=ilp32")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdlib -nostartfiles -nodefaultlibs -g -march=rv32imac -mabi=ilp32 -mcmodel=medany")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
+    -nostdlib -nostartfiles -nodefaultlibs -g -march=rv32imac -mabi=ilp32 -mcmodel=medany \
+    -pedantic -pedantic-errors -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization \
+    -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs \
+    -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wswitch-default -Wundef \
+    -Werror -Wno-unused -Winline -Wconversion -Wfloat-equal")
 
 set(bsp "${CMAKE_SOURCE_DIR}/bsp/hifive1b")
 

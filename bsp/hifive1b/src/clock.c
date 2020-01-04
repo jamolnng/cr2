@@ -20,16 +20,17 @@ uint64_t get_timer_value() {
 
 void clock_init() {
   // enable hfrosc
-  prci_reg(PRCI_REG_HFROSC) |= 0x40000000;
+  prci_reg(PRCI_REG_HFROSC) |= 0x40000000ul;
 
   // configure pll
-  prci_reg(PRCI_REG_PLL_CFG) |= 0x00060000;
+  prci_reg(PRCI_REG_PLL_CFG) |= 0x00060000ul;
 
   // switch to pll
-  prci_reg(PRCI_REG_PLL_CFG) |= 0x00010000;
+  prci_reg(PRCI_REG_PLL_CFG) |= 0x00010000ul;
 
   // disable hfrosc
-  prci_reg(PRCI_REG_HFROSC) &= ~0x40000000;
+  prci_reg(PRCI_REG_HFROSC) &= ~0x40000000ul;
+  get_cpu_freq();  // warm up clock
 }
 
 unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
@@ -54,4 +55,4 @@ unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
          ((delta_mcycle % delta_mtime) * mtime_freq) / delta_mtime;
 }
 
-unsigned long get_cpu_freq() { return measure_cpu_freq(10000); }
+unsigned long get_cpu_freq() { return measure_cpu_freq(10); }
