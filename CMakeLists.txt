@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 cmake_policy(VERSION 3.2)
 
-project(cs2 VERSION 0.0.1 LANGUAGES C)
+project(cs2 VERSION 0.0.1 LANGUAGES C ASM)
 
 set(CMAKE_C_COMPILER "${CMAKE_SOURCE_DIR}/tools/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-gcc")
 set(CMAKE_CXX_COMPILER "${CMAKE_SOURCE_DIR}/tools/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-g++")
+set(CMAKE_ASM_COMPILER "${CMAKE_SOURCE_DIR}/tools/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-as")
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
@@ -14,13 +15,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdlib -nostartfiles -nodefaultlibs -Wall -Werror -pedantic -g -march=rv32imac -mabi=ilp32 -mcmodel=medany")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -march=rv32imac -mabi=ilp32")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdlib -nostartfiles -nodefaultlibs -g -march=rv32imac -mabi=ilp32 -mcmodel=medany")
 
 set(bsp "${CMAKE_SOURCE_DIR}/bsp/hifive1b")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${bsp}/linker.ld\"")
 
-file(GLOB_RECURSE SOURCES "src/*.c" "${bsp}/src/*.c" "libc/src/*.c")
+file(GLOB_RECURSE SOURCES "src/*.c" "src/*.asm" "${bsp}/src/*.c" "libc/src/*.c")
 file(GLOB_RECURSE PUBLIC_HEADERS "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 
