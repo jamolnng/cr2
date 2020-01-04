@@ -15,10 +15,21 @@ int main();
 uintptr_t handle_trap(uintptr_t mcause, uintptr_t epc);
 
 void set_timer(void) {
+  static int timer_counter;
+
+  uint64_t next = get_timer_value();
+  if (timer_counter == 50) {
+    timer_counter = 0;
+  }
   // 50Hz (655 * 32 + 656 * 18) = 32768
-  uint64_t next = get_timer_value() + 655;
+  if (timer_counter > 31) {
+    next += 656;
+  } else {
+    next += 655;
+  }
   clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
+  timer_counter++;
 }
 
 void timer_isr(void) {
@@ -55,6 +66,7 @@ int main() {
   for (;;) {
     for (i = 0; i < 100000; ++i)
       ;
+    // gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
 
   return 0;

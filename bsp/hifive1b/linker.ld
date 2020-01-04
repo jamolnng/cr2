@@ -21,6 +21,7 @@ PHDRS
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
+  PROVIDE(__stack_size = __stack_size);
   
   .init           :
   {
@@ -34,62 +35,67 @@ SECTIONS
  
   .text           :
   {
-    *(.text .text.*)
+		*(.text.unlikely .text.unlikely.*)
+		*(.text.startup .text.startup.*)
+		*(.text .text.*)
+		*(.gnu.linkonce.t.*)
   } >flash AT>flash :flash
+
+  PROVIDE (__etext = .);
+	PROVIDE (_etext = .);
+	PROVIDE (etext = .);
  
   .rodata         :
   {
-    *(.rdata)
-    *(.rodata .rodata.*)
+		*(.rdata)
+		*(.rodata .rodata.*)
+		*(.gnu.linkonce.r.*)
+		. = ALIGN(8);
+		*(.srodata.cst16)
+		*(.srodata.cst8)
+		*(.srodata.cst4)
+		*(.srodata.cst2)
+		*(.srodata .srodata.*)
   } >flash AT>flash :flash
 
-  .itim : ALIGN(8) {
+	. = ALIGN(8);
+
+	.itim : ALIGN(8) {
 		*(.itim .itim.*)
 	} >itim AT>flash :itim_init
  
-  . = ALIGN(4);
  
-  .data          :
-  {
-    *(.data .data.*)
-    *(.gnu.linkonce.d.*)
-    . = ALIGN(8);
-    PROVIDE( __global_pointer$ = . + 0x800 );
-    *(.sdata .sdata.* .sdata2.*)
-    *(.gnu.linkonce.s.*)
-    . = ALIGN(8);
-    *(.srodata.cst16)
-    *(.srodata.cst8)
-    *(.srodata.cst4)
-    *(.srodata.cst2)
-    *(.srodata .srodata.*)
+  .data : ALIGN(8) {
+		*(.data .data.*)
+		*(.gnu.linkonce.d.*)
+		. = ALIGN(8);
+		PROVIDE( __global_pointer$ = . + 0x800 );
+		*(.sdata .sdata.* .sdata2.*)
+		*(.gnu.linkonce.s.*)
+		. = ALIGN(8);
+		*(.srodata.cst16)
+		*(.srodata.cst8)
+		*(.srodata.cst4)
+		*(.srodata.cst2)
+		*(.srodata .srodata.*)
 		. = ALIGN(8);
 		*(.rdata)
 		*(.rodata .rodata.*)
-  } >ram AT>flash :ram_init
+		*(.gnu.linkonce.r.*)
+	} >ram AT>flash :ram_init
  
-  . = ALIGN(4);
-  PROVIDE( _edata = . );
-  PROVIDE( edata = . );
- 
-  PROVIDE( _fbss = . );
-  PROVIDE( __bss_start = . );
-  .bss : ALIGN(8) {
+	.bss : ALIGN(8) {
 		*(.sbss*)
 		*(.gnu.linkonce.sb.*)
 		*(.bss .bss.*)
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
 	} >ram AT>ram :ram
- 
-  . = ALIGN(8);
-  PROVIDE( _end = . );
-  PROVIDE( end = . );
- 
-  .stack ORIGIN(ram) + LENGTH(ram) - __stack_size :
-  {
-    PROVIDE( _heap_end = . );
-    . = __stack_size;
-    PROVIDE( _sp = . );
-  } >ram AT>ram :ram
+	PROVIDE( metal_segment_bss_target_start = ADDR(.bss) );
+	PROVIDE( metal_segment_bss_target_end = ADDR(.bss) + SIZEOF(.bss) );
+
+	.stack : {
+		. += __stack_size;
+		PROVIDE( _sp = . );
+	} >ram AT>ram :ram
 }
