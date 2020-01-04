@@ -17,7 +17,7 @@ uintptr_t handle_trap(uintptr_t mcause, uintptr_t epc);
 void set_timer(void) {
   // 50Hz (655 * 32 + 656 * 18) = 32768
   uint64_t next = get_timer_value() + 655;
-  clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next & 0x00000000FFFFFFFF);
+  clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
 }
 
