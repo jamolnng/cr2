@@ -1,5 +1,7 @@
-#if !defined(__CR2_GPIO_H__)
+#ifndef __CR2_GPIO_H__
 #define __CR2_GPIO_H__
+
+#include <memory_map.h>
 
 /* GPIO Registers */
 #define GPIO_REG_IN_VAL 0x00
@@ -19,6 +21,8 @@
 #define GPIO_REG_IOF_EN 0x38
 #define GPIO_REG_IOF_SEL 0x3C
 #define GPIO_REG_OUT_XOR 0x40
+
+#define gpio_reg(reg) mmio(GPIO_CTRL_ADDR, reg)
 
 /* Hardware I/O Functions (IOF) */
 #define GPIO_IOF0_SPI1_CS0 0x00000004ul

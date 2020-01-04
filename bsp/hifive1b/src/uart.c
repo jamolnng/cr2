@@ -5,40 +5,34 @@
 
 void uart_init(uart_t instance, uint32_t baud) {
   // enable GPIO functions
-  uint32_t mask = (instance == 0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
-  uint32_t mmval = mmio_read_u32(instance, GPIO_REG_IOF_SEL);
-  mmio_write_u32(instance, GPIO_REG_IOF_SEL, mmval & ~mask);
-  mmval = mmio_read_u32(instance, GPIO_REG_IOF_EN);
-  mmio_write_u32(instance, GPIO_REG_IOF_EN, mmval | mask);
+  uint32_t mask = (instance == UART0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
+  mmio(instance, GPIO_REG_IOF_SEL) &= ~mask;
+  mmio(instance, GPIO_REG_IOF_EN) |= mask;
 
   // set baud divider
-  baud = clock_freq() / baud - 1;
-  mmio_write_u32(instance, UART_REG_DIV, baud);
+  get_cpu_freq();
+  baud = get_cpu_freq() / baud - 1;
+  mmio(instance, UART_REG_DIV) = baud;
 
   // enable RX and TX
-  mmval = mmio_read_u32(instance, UART_REG_TX_CTRL);
-  mmio_write_u32(instance, UART_REG_TX_CTRL, mmval | 1u);
-  mmval = mmio_read_u32(instance, UART_REG_RX_CTRL);
-  mmio_write_u32(instance, UART_REG_RX_CTRL, mmval | 1u);
+  mmio(instance, UART_REG_TX_CTRL) |= 1u;
+  mmio(instance, UART_REG_RX_CTRL) |= 1u;
 }
 
 void uart_deinit(uart_t instance) {
   // disable RX and TX
-  uint32_t mmval = mmio_read_u32(instance, UART_REG_TX_CTRL);
-  mmio_write_u32(instance, UART_REG_TX_CTRL, mmval & ~0x00000001ul);
-  mmval = mmio_read_u32(instance, UART_REG_RX_CTRL);
-  mmio_write_u32(instance, UART_REG_RX_CTRL, mmval & ~0x00000001ul);
+  mmio(instance, GPIO_REG_IOF_EN) &= ~0x00000001ul;
+  mmio(instance, GPIO_REG_IOF_EN) &= ~0x00000001ul;
 
   // disable GPIO functions
-  uint32_t mask = (instance == 0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
-  mmval = mmio_read_u32(instance, GPIO_REG_IOF_EN);
-  mmio_write_u32(instance, GPIO_REG_IOF_EN, mmval & ~mask);
+  uint32_t mask = (instance == UART0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
+  mmio(instance, GPIO_REG_IOF_EN) &= ~mask;
 }
 
 void uart_putc(uart_t instance, char c) {
-  while (mmio_read_u32(instance, UART_REG_TX_DATA) & 0x80000000)
+  while (mmio(instance, UART_REG_TX_DATA) & 0x80000000)
     ;
-  mmio_write_u8(instance, UART_REG_TX_DATA, c);
+  mmio(instance, UART_REG_TX_DATA) = c;
 }
 
 void uart_puts(uart_t instance, const char* str, int len) {
@@ -48,7 +42,7 @@ void uart_puts(uart_t instance, const char* str, int len) {
 }
 
 int uart_getc(uart_t instance) {
-  uint32_t mmval = mmio_read_u32(instance, UART_REG_RX_DATA);
+  uint32_t mmval = mmio(instance, UART_REG_RX_DATA);
   if (mmval & 0x80000000) {
     return -1;  // EOF
   } else {
