@@ -21,8 +21,8 @@ void uart_init(uart_t instance, uint32_t baud) {
 
 void uart_deinit(uart_t instance) {
   // disable RX and TX
-  mmio(instance, GPIO_REG_IOF_EN) &= ~0x00000001ul;
-  mmio(instance, GPIO_REG_IOF_EN) &= ~0x00000001ul;
+  mmio(instance, GPIO_REG_IOF_EN) &= ~1u;
+  mmio(instance, GPIO_REG_IOF_EN) &= ~1u;
 
   // disable GPIO functions
   uint32_t mask = (instance == UART0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
@@ -30,7 +30,7 @@ void uart_deinit(uart_t instance) {
 }
 
 void uart_putc(uart_t instance, char c) {
-  while (mmio(instance, UART_REG_TX_DATA) & 0x80000000)
+  while (mmio(instance, UART_REG_TX_DATA) & UART_TX_DATA_FULL)
     ;
   mmio(instance, UART_REG_TX_DATA) = c;
 }
@@ -43,7 +43,7 @@ void uart_puts(uart_t instance, const char* str, int len) {
 
 int uart_getc(uart_t instance) {
   uint32_t mmval = mmio(instance, UART_REG_RX_DATA);
-  if (mmval & 0x80000000) {
+  if (mmval & UART_RX_DATA_EMPTY) {
     return -1;  // EOF
   } else {
     return mmval & 0x0FF;
