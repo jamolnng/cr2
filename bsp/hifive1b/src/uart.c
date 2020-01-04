@@ -3,29 +3,31 @@
 #include "clock.h"
 #include "gpio.h"
 
+#define TXRX_EN 0x1u
+
 void uart_init(uart_t instance, uint32_t baud) {
   // enable GPIO functions
   uint32_t mask = (instance == UART0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
-  mmio(instance, GPIO_REG_IOF_SEL) &= ~mask;
-  mmio(instance, GPIO_REG_IOF_EN) |= mask;
+  gpio_reg(GPIO_REG_IOF_SEL) &= ~mask;  // select IOF 0
+  gpio_reg(GPIO_REG_IOF_EN) |= mask;    // enable uart IOF
 
   // set baud divider
-  baud = get_cpu_freq() / baud - 1;
+  baud = (get_cpu_freq() / baud) - 1;
   mmio(instance, UART_REG_DIV) = baud;
 
   // enable RX and TX
-  mmio(instance, UART_REG_TX_CTRL) |= 1u;
-  mmio(instance, UART_REG_RX_CTRL) |= 1u;
+  mmio(instance, UART_REG_TX_CTRL) |= TXRX_EN;
+  mmio(instance, UART_REG_RX_CTRL) |= TXRX_EN;
 }
 
 void uart_deinit(uart_t instance) {
   // disable RX and TX
-  mmio(instance, GPIO_REG_IOF_EN) &= ~1u;
-  mmio(instance, GPIO_REG_IOF_EN) &= ~1u;
+  mmio(instance, UART_REG_TX_CTRL) &= ~TXRX_EN;
+  mmio(instance, UART_REG_RX_CTRL) &= ~TXRX_EN;
 
   // disable GPIO functions
   uint32_t mask = (instance == UART0) ? GPIO_IOF0_UART0 : GPIO_IOF0_UART1;
-  mmio(instance, GPIO_REG_IOF_EN) &= ~mask;
+  gpio_reg(GPIO_REG_IOF_EN) &= ~mask;
 }
 
 void uart_putc(uart_t instance, char c) {
