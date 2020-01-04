@@ -35,21 +35,4 @@
 
 #define mmio(reg, offset) (*(volatile uint32_t *)((reg) + (offset)))
 
-// static inline uint32_t mmio_read_u32(unsigned long reg, unsigned int offset)
-// {
-//   return (*(volatile uint32_t *)((reg) + (offset)));
-// }
-
-// /* This function will write a byte to an MMIO register */
-// static inline void mmio_write_u8(unsigned long reg, unsigned int offset,
-//                                  uint8_t val) {
-//   (*(volatile uint32_t *)((reg) + (offset))) = val;
-// }
-
-// /*This function will write a 32-bit value to an MMIO register */
-// static inline void mmio_write_u32(unsigned long reg, unsigned int offset,
-//                                   uint32_t val) {
-//   (*(volatile uint32_t *)((reg) + (offset))) = val;
-// }
-
 #endif

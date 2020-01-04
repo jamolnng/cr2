@@ -1,3 +1,4 @@
+#include <clint.h>
 #include <clock.h>
 #include <gpio.h>
 #include <memory_map.h>
@@ -9,15 +10,13 @@
 extern void trap_entry(void);
 
 void set_timer() {
-  volatile uint64_t* mtime = (uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
-  volatile uint64_t* mtimecmp = (uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIMECMP);
-  uint64_t now = *mtime;
-  uint64_t then = now + 32768;
-  *mtimecmp = then;
+  // 50Hz (655 * 32 + 656 * 18) = 32768
+  uint64_t next = get_timer_value() + 655;
+  clint_reg(CLINT_REG_MTIMECMP) = next;
 }
 
 void timer_isr() {
-  gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
+  gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   set_timer();
 }
 
@@ -42,9 +41,9 @@ int main() {
   set_timer();
 
   /* Enable timer and all interrupts */
+  set_csr(mtvec, &trap_entry);
   set_csr(mie, MIP_MTIP);
   set_csr(mstatus, MSTATUS_MIE);
-  set_csr(mtvec, &trap_entry);
 
   for (;;) {
   }

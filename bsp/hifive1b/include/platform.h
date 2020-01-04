@@ -1,9 +1,6 @@
 #ifndef __CR2_PLATFORM_H__
 #define __CR2_PLATFORM_H__
 
-#define MCAUSE_INT 0x80000000
-#define MCAUSE_CAUSE 0x7FFFFFFF
-
 #define read_csr(reg)                             \
   ({                                              \
     unsigned long __tmp;                          \
@@ -55,9 +52,6 @@
 
 #define GLOBAL_INT_EN 0x00000008ul
 #define TMR_INT_EN 0
-
-#define CLINT_MTIME 0xBFF8
-#define CLINT_MTIMECMP 0x4000
 
 #define IRQ_M_TIMER 7
 #define MIP_MTIP (1 << IRQ_M_TIMER)
