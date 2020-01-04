@@ -14,6 +14,9 @@
 #define UART_REG_INT_PENDING 0x14
 #define UART_REG_DIV 0x18
 
+#define UART_TX_DATA_FULL 0x80000000ul
+#define UART_RX_DATA_EMPTY 0x80000000ul
+
 typedef enum uart_t { UART0 = UART0_CTRL_ADDR, UART1 = UART1_CTRL_ADDR } uart_t;
 void uart_init(uart_t instance, uint32_t baud);
 void uart_deinit(uart_t instance);
