@@ -7,66 +7,56 @@
 #include <string.h>
 #include <uart.h>
 
-extern void trap_entry(void);
+#include <cr2.h>
 
 void set_timer(void);
-void timer_isr(void);
+void blink1(void);
+void blink2(void);
 int main();
-uintptr_t handle_trap(uintptr_t mcause, uintptr_t epc);
 
-void set_timer(void) {
-  static int timer_counter;
-
-  uint64_t next = get_timer_value();
-  if (timer_counter == 50) {
-    timer_counter = 0;
+void blink1(void) {
+  for (;;) {
+    for (int i = 0; i < 10000; ++i)
+      ;
+    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
-  // 50Hz (655 * 32 + 656 * 18) = 32768
-  if (timer_counter > 31) {
-    next += 656;
-  } else {
-    next += 655;
+}
+void blink2(void) {
+  for (;;) {
+    for (int i = 0; i < 10000; ++i)
+      ;
+    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
-  clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
-  clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
-  timer_counter++;
 }
 
-void timer_isr(void) {
-  gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
-  set_timer();
-}
+#define STACK_SIZE 96
 
-uintptr_t handle_trap(uintptr_t mcause, uintptr_t epc) {
-  if ((mcause & MCAUSE_INT) && ((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
-    timer_isr();
-  }
-  return epc;
-}
+uint32_t stack1[STACK_SIZE] __attribute__((aligned(8)));
+cr2_thread_t thread1;
+
+uint32_t stack2[STACK_SIZE] __attribute__((aligned(8)));
+cr2_thread_t thread2;
+
+uintptr_t *currentTCB;
 
 int main() {
-  gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED;
-  gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED;
+  gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
+  gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
 
   char str[64] = "Running at Hz: ";
   ultoa(get_cpu_freq(), &str[15], 63, 10);
   uart_puts(UART0, str, strlen(str));
 
-  clear_csr(mstatus, MSTATUS_MIE);
-  clear_csr(mie, MIP_MTIP);
+  cr2_init();
+  cr2_thread_init(&thread1, blink1, stack1, STACK_SIZE);
+  cr2_thread_init(&thread2, blink2, stack2, STACK_SIZE);
 
-  set_timer();
+  cr2_start();
 
-  /* Enable timer and all interrupts */
-  set_csr(mtvec, &trap_entry);
-  set_csr(mie, MIP_MTIP);
-  set_csr(mstatus, MSTATUS_MIE);
-
-  int i;
   for (;;) {
-    for (i = 0; i < 100000; ++i)
+    for (int i = 0; i < 1200000; ++i)
       ;
-    // gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
+    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
 
   return 0;

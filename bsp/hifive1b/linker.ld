@@ -91,8 +91,6 @@ SECTIONS
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
 	} >ram AT>ram :ram
-	PROVIDE( metal_segment_bss_target_start = ADDR(.bss) );
-	PROVIDE( metal_segment_bss_target_end = ADDR(.bss) + SIZEOF(.bss) );
 
 	.stack : {
 		. += __stack_size;
