@@ -14,18 +14,18 @@ void blink1(void);
 void blink2(void);
 int main();
 
-void blink1(void) {
+__attribute__((aligned(2))) void blink1(void) {
   for (;;) {
-    for (int i = 0; i < 10000; ++i)
-      ;
-    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
-  }
-}
-void blink2(void) {
-  for (;;) {
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 1200000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
+  }
+}
+__attribute__((aligned(2))) void blink2(void) {
+  for (;;) {
+    for (int i = 0; i < 1200000; ++i)
+      ;
+    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
 }
 

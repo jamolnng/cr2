@@ -6,6 +6,9 @@
 #include <platform.h>
 #include <string.h>
 
+cr2_thread_t* cr2_current_thread;
+cr2_thread_t cr2_idle_thread;
+
 void cr2_init(void) {
   register uintptr_t trap_vec = (uintptr_t)&cr2_trap_vec_entry;
   if ((trap_vec & 0xFFFFFFFCu) != trap_vec) {
@@ -13,6 +16,7 @@ void cr2_init(void) {
     return;
   }
   __asm__("csrw mtvec, %0" ::"r"(trap_vec));
+  cr2_current_thread = &cr2_idle_thread;
 }
 
 void cr2_start(void) {
@@ -34,14 +38,15 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th, uint32_t* stack,
 void blink0(void);
 void blink0(void) { gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED; }
 
-void cr2_sys_tick_handler(uintptr_t mcause) {
+/*__attribute__((noinline)) __attribute__((section(".itim")))*/ void
+cr2_sys_tick_handler(uintptr_t mcause) {
   if ((mcause & MCAUSE_INT) && ((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
-    blink0();
+    // blink0();
     cr2_set_timer();
   }
 }
 
-void cr2_set_timer(void) {
+/*__attribute__((section(".itim")))*/ void cr2_set_timer(void) {
   // static int timer_counter;
 
   uint64_t next = get_timer_value();
