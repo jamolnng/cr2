@@ -16,14 +16,14 @@ int main();
 
 __attribute__((aligned(2))) void blink1(void) {
   for (;;) {
-    for (int i = 0; i < 1200000; ++i)
+    for (int i = 0; i < 400000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
 __attribute__((aligned(2))) void blink2(void) {
   for (;;) {
-    for (int i = 0; i < 1200000; ++i)
+    for (int i = 0; i < 400000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
@@ -42,6 +42,7 @@ uintptr_t *currentTCB;
 int main() {
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
+  gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
 
   char str[64] = "Running at Hz: ";
   ultoa(get_cpu_freq(), &str[15], 63, 10);
@@ -54,7 +55,7 @@ int main() {
   cr2_start();
 
   for (;;) {
-    for (int i = 0; i < 1200000; ++i)
+    for (int i = 0; i < 400000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
