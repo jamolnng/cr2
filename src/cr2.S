@@ -111,6 +111,6 @@ cr2_trap_vec_entry:
   # reset the stack
   addi sp, sp, (CR2_REGISTER_WIDTH * CR2_STACK_STORE_SIZE)
   
-	mret
+  mret
 
 #endif
