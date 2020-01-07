@@ -62,20 +62,18 @@ void cr2_sys_tick_handler(uintptr_t mcause) {
 }
 
 void cr2_set_timer(void) {
-  // static int timer_counter;
+  static int timer_counter;
 
   uint64_t next = get_timer_value();
-  // if (timer_counter == 50) {
-  //   timer_counter = 0;
-  // }
-  // // 50Hz (655 * 32 + 656 * 18) = 32768
-  // if (timer_counter > 31) {
-  //   next += 656;
-  // } else {
-  //   next += 655;
-  // }
-  // next += 6550;
-  next += 655;
+  if (timer_counter == 50) {
+    timer_counter = 0;
+  }
+  // 50Hz (655 * 32 + 656 * 18) = 32768
+  if (timer_counter > 31) {
+    next += 656;
+  } else {
+    next += 655;
+  }
   clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
   // timer_counter++;
