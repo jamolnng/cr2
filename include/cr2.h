@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define CR2_MAX_THREADS 3
+#define CR2_MAX_THREADS 8
 
 // Thread Control Block
 typedef struct {
