@@ -44,7 +44,7 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
     uint32_t ptr;
   } helper = {.func = th};
   *stack_ptr = helper.ptr;
-  stack_ptr -= 31;
+  stack_ptr -= 29;
   t->stack_ptr = (void*)stack_ptr;
   cr2_threads[cr2_next_thread++] = t;
 }

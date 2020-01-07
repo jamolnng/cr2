@@ -1,16 +1,20 @@
 #ifndef __CR2_CTX_SWITCH_ASM__
 #define __CR2_CTX_SWITCH_ASM__
 
+.set CR2_REGISTER_WIDTH, 4
+.set CR2_STACK_STORE_SIZE, 30
+
 .section .text.cr2_trap_vec_entry
 .align 2
 .weak cr2_trap_vec_entry
 cr2_trap_vec_entry:
+  .global cr2_trap_vec_entry
   .global cr2_current_thread
 
   # make room in current thread stack
   # RISC-V 32 words are 4 bytes wide
   # hold all of registers except sp and gp
-  addi sp, sp, -4 * 30
+  addi sp, sp, -(CR2_REGISTER_WIDTH * CR2_STACK_STORE_SIZE)
 
   # store registers
   sw   x1, 0 * 4(sp)
@@ -53,7 +57,7 @@ cr2_trap_vec_entry:
 
   # save epc (our thread's pc)
   csrr t0, mepc
-  sw   t0, 31 * 4(sp)
+  sw   t0, 29 * 4(sp)
 
   csrr a0, mcause
   call cr2_sys_tick_handler
@@ -66,7 +70,7 @@ cr2_trap_vec_entry:
   lw   sp, 0x0(t0)
 
   # load mepc return address
-  lw   t0, 31 * 4(sp)
+  lw   t0, 29 * 4(sp)
   csrw mepc, t0
 
   # load registers
@@ -105,7 +109,7 @@ cr2_trap_vec_entry:
   lw   x31, 28 * 4(sp)
 
   # reset the stack
-  addi sp, sp, 4 * 30
+  addi sp, sp, (CR2_REGISTER_WIDTH * CR2_STACK_STORE_SIZE)
   
 	mret
 
