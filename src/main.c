@@ -33,9 +33,9 @@ cr2_thread_t thread1;
 cr2_thread_t thread2;
 
 int main() {
-  // clock_init_16MHz();
+  // clock_init_hfxosc();
   // max f=38
-  clock_init_pll(1, 31, 1);
+  clock_init_hfpll(1, 31, 1);
   uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;

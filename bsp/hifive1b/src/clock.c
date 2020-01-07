@@ -39,7 +39,7 @@ void clock_init_hfrosc(unsigned int div, unsigned int trim) {
   prci_reg(PRCI_REG_PLL_CFG) &= ~PLL_SEL;
 }
 
-void clock_init_16MHz() {
+void clock_init_hfxosc() {
   if (prci_reg(PRCI_REG_PLL_CFG) & PLL_SEL) {
     clock_init_hfrosc(4, 16);
   }
@@ -51,7 +51,7 @@ void clock_init_16MHz() {
   measure_cpu_freq(100);
 }
 
-void clock_init_pll(unsigned int r, unsigned int f, unsigned int q) {
+void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
   if (prci_reg(PRCI_REG_PLL_CFG) & PLL_SEL) {
     clock_init_hfrosc(4, 16);
   }
