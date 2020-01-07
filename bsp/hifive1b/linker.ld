@@ -18,8 +18,6 @@ PHDRS
 	itim_init PT_LOAD;
 }
 
-__stack_pointer = ORIGIN(ram) + LENGTH(ram);
-
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
@@ -103,7 +101,10 @@ SECTIONS
 	.itim : ALIGN(8) {
 		*(.itim .itim.*)
 	} >itim AT>flash :itim_init
- 
+	PROVIDE(__itim_source_start = LOADADDR(.itim) );
+	PROVIDE(__itim_target_start = ADDR(.itim) );
+	PROVIDE(__itim_target_end = ADDR(.itim) + SIZEOF(.itim) );
+	PROVIDE(__itim_memory_end = ORIGIN(itim) + LENGTH(itim));
  
   .data : ALIGN(8) {
 		*(.data .data.*)
@@ -123,19 +124,22 @@ SECTIONS
 		*(.rodata .rodata.*)
 		*(.gnu.linkonce.r.*)
 	} >ram AT>flash :ram_init
+	PROVIDE( __data_source_start = LOADADDR(.data) );
+	PROVIDE( __data_target_start = ADDR(.data) );
+	PROVIDE( __data_target_end = ADDR(.data) + SIZEOF(.data) );
  
 	.bss : ALIGN(8) {
-		__bss_start = .;
 		*(.sbss*)
 		*(.gnu.linkonce.sb.*)
 		*(.bss .bss.*)
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
-		__bss_end = .;
 	} >ram AT>ram :ram
+	PROVIDE( __bss_start = ADDR(.bss) );
+	PROVIDE( __bss_end = ADDR(.bss) + SIZEOF(.bss) );
 
 	.stack : {
 		. += __stack_size;
-		PROVIDE( _sp = . );
 	} >ram AT>ram :ram
+		PROVIDE(__stack_pointer = ADDR(.stack) + SIZEOF(.stack));
 }

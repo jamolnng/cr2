@@ -37,7 +37,10 @@ cr2_thread_t thread1;
 uint32_t stack2[STACK_SIZE] __attribute__((aligned(8)));
 cr2_thread_t thread2;
 
-uintptr_t *currentTCB;
+__attribute__((noinline)) __attribute__((section(".itim"))) int initim(int x);
+__attribute__((noinline)) __attribute__((section(".itim"))) int initim(int x) {
+  return x * x;
+}
 
 int main() {
   clock_init();
@@ -54,6 +57,14 @@ int main() {
   cr2_thread_init(&thread1, blink1, stack1, STACK_SIZE);
   cr2_thread_init(&thread2, blink2, stack2, STACK_SIZE);
 
+  if (initim(2) != 4) {
+    uart_puts(UART0, "ITIM Failed", 11);
+  }
+
+  if (initim(2) == 4) {
+    uart_puts(UART0, "ITIM Success", 11);
+  }
+
   cr2_start();
 
   for (;;) {
@@ -64,9 +75,6 @@ int main() {
     if (strcmp(str, "off") == 0) {
       gpio_reg(GPIO_REG_OUTPUT_VAL) |= BLUE_LED;
     }
-    // for (int i = 0; i < 400000; ++i)
-    //  ;
-    // gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
 
   return 0;
