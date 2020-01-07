@@ -6,7 +6,9 @@
 #include <platform.h>
 #include <string.h>
 
-#define CR2_MAX_THREADS 3
+extern void cr2_trap_vec_entry(void);
+void cr2_sys_tick_handler(uintptr_t mcause);
+void cr2_set_timer(void);
 
 cr2_thread_t* volatile cr2_current_thread;
 static cr2_thread_t cr2_idle_thread;
@@ -46,8 +48,7 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th, uint32_t* stack,
   cr2_threads[cr2_next_thread++] = t;
 }
 
-/*__attribute__((noinline)) __attribute__((section(".itim")))*/ void
-cr2_sys_tick_handler(uintptr_t mcause) {
+void cr2_sys_tick_handler(uintptr_t mcause) {
   static int test = 0;
   if ((mcause & MCAUSE_INT) && ((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
     while (cr2_threads[test] == 0) {
@@ -62,7 +63,7 @@ cr2_sys_tick_handler(uintptr_t mcause) {
   }
 }
 
-/*__attribute__((section(".itim")))*/ void cr2_set_timer(void) {
+void cr2_set_timer(void) {
   // static int timer_counter;
 
   uint64_t next = get_timer_value();
