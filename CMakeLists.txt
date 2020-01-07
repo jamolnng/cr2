@@ -40,7 +40,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -pedantic -pedantic-errors -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization \
     -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs \
     -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wswitch-default -Wundef \
-    -Werror -Wno-unused -Winline -Wconversion -Wfloat-equal")
+    -Werror -Wno-unused -Winline -Wconversion -Wfloat-equal -ffreestanding")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${bsp}/linker.ld\"")
 
 file(GLOB_RECURSE SOURCES "src/*.c" "src/*.s" "${bsp}/src/*.c" "libc/src/*.c")
@@ -75,6 +75,13 @@ add_custom_target(cr2hex
     COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objcopy${CMAKE_EXECUTABLE_SUFFIX} -S -O ihex $<TARGET_FILE:cr2> "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
 )
 
+add_custom_target(cr2asm
+    ALL
+    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
+    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dS $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.s"
+)
+
 set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.hex")
+set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.s")
 
 add_dependencies(cr2hex cr2)

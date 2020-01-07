@@ -36,8 +36,8 @@ void uart_putc(uart_t instance, char c) {
   mmio(instance, UART_REG_TX_DATA) = c;
 }
 
-void uart_puts(uart_t instance, const char* str, int len) {
-  for (int i = 0; i < len; ++i) {
+void uart_puts(uart_t instance, const char* str, unsigned int len) {
+  for (unsigned int i = 0; i < len; ++i) {
     uart_putc(instance, str[i]);
   }
 }

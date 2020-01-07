@@ -56,8 +56,8 @@ int strcmp(const char* str1, const char* str2) {
   return *(const unsigned char*)str1 - *(const unsigned char*)str2;
 }
 
-int strlen(const char* s) {
-  int i;
+unsigned int strlen(const char* s) {
+  unsigned int i;
   i = 0;
   while (s[i]) {
     i += 1;
@@ -66,10 +66,10 @@ int strlen(const char* s) {
 }
 
 char* strrev(char* str) {
-  int i;
-  int j;
+  unsigned int i;
+  unsigned int j;
   char a;
-  int len = strlen((const char*)str);
+  unsigned int len = strlen((const char*)str);
   for (i = 0, j = len - 1; i < j; i++, j--) {
     a = str[i];
     str[i] = str[j];
