@@ -16,14 +16,14 @@ int main();
 
 void blink1(void) {
   for (;;) {
-    for (int i = 0; i < 200000; ++i)
+    for (int i = 0; i < 2000000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
 void blink2(void) {
   for (;;) {
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < 1000000; ++i)
       ;
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
