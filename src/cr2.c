@@ -10,7 +10,7 @@
 
 cr2_thread_t* cr2_current_thread;
 cr2_thread_t cr2_idle_thread;
-cr2_thread_t* cr2_threads[CR2_MAX_THREADS] = {0};
+static cr2_thread_t* volatile cr2_threads[CR2_MAX_THREADS] = {0};
 
 void cr2_init(void) {
   register uintptr_t trap_vec = (uintptr_t)&cr2_trap_vec_entry;
@@ -19,6 +19,8 @@ void cr2_init(void) {
     return;
   }
   __asm__("csrw mtvec, %0" ::"r"(trap_vec));
+  memset(*((cr2_thread_t**)&cr2_threads), 0,
+         CR2_MAX_THREADS * sizeof(cr2_thread_t*));
   cr2_current_thread = &cr2_idle_thread;
   cr2_threads[CR2_MAX_THREADS - 1] = &cr2_idle_thread;
 }
@@ -38,16 +40,15 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th, uint32_t* stack,
   uint32_t* sp = &stack[stack_size];
   memset(stack, 0, stack_size * sizeof(uint32_t));
   --sp;
-  *sp = (uint32_t)th;
+  *sp = *(uint32_t*)&th;
   sp -= 31;
   t->sp = (void*)sp;
   cr2_threads[cr2_next_thread++] = t;
 }
 
-static int test = 0;
-
 /*__attribute__((noinline)) __attribute__((section(".itim")))*/ void
 cr2_sys_tick_handler(uintptr_t mcause) {
+  static int test = 0;
   if ((mcause & MCAUSE_INT) && ((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
     while (cr2_threads[test] == 0) {
       test++;

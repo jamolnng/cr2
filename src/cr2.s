@@ -1,12 +1,9 @@
 #ifndef __CR2_CTX_SWITCH_ASM__
 #define __CR2_CTX_SWITCH_ASM__
 
-.macro epc_save
-  .endm
-
-  .section .text.entry
-  .align 2
-  .weak cr2_trap_vec_entry
+.section .text.cr2_trap_vec_entry
+.align 2
+.weak cr2_trap_vec_entry
 cr2_trap_vec_entry:
   .global cr2_current_thread
 

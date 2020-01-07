@@ -1,6 +1,6 @@
 OUTPUT_ARCH("riscv")
  
-ENTRY(_start)
+ENTRY(_enter)
  
 MEMORY
 {
@@ -17,7 +17,9 @@ PHDRS
 	itim PT_LOAD;
 	itim_init PT_LOAD;
 }
- 
+
+__stack_pointer = ORIGIN(ram) + LENGTH(ram);
+
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
@@ -25,7 +27,9 @@ SECTIONS
   
   .init           :
   {
-    KEEP (*(SORT_NONE(.init)))
+		KEEP (*(.init.enter))
+		KEEP (*(.init.*))
+		KEEP (*(SORT_NONE(.init)))
   } >flash AT>flash :flash
  
   .fini           :
@@ -60,6 +64,42 @@ SECTIONS
 
 	. = ALIGN(8);
 
+	.preinit_array : {
+		PROVIDE_HIDDEN (__preinit_array_start = .);
+		KEEP (*(.preinit_array))
+		PROVIDE_HIDDEN (__preinit_array_end = .);
+	} >flash AT>flash :flash
+
+	.init_array : {
+		PROVIDE_HIDDEN (__init_array_start = .);
+		KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
+		KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
+		PROVIDE_HIDDEN (__init_array_end = .);
+	} >flash AT>flash :flash
+
+	.fini_array : {
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
+		KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
+		PROVIDE_HIDDEN (__fini_array_end = .);
+	} >flash AT>flash :flash
+
+	.ctors : {
+		KEEP (*crtbegin.o(.ctors))
+		KEEP (*crtbegin?.o(.ctors))
+		KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
+		KEEP (*(SORT(.ctors.*)))
+		KEEP (*(.ctors))
+	} >flash AT>flash :flash
+
+	.dtors : {
+		KEEP (*crtbegin.o(.dtors))
+		KEEP (*crtbegin?.o(.dtors))
+		KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
+		KEEP (*(SORT(.dtors.*)))
+		KEEP (*(.dtors))
+	} >flash AT>flash :flash
+
 	.itim : ALIGN(8) {
 		*(.itim .itim.*)
 	} >itim AT>flash :itim_init
@@ -85,11 +125,13 @@ SECTIONS
 	} >ram AT>flash :ram_init
  
 	.bss : ALIGN(8) {
+		__bss_start = .;
 		*(.sbss*)
 		*(.gnu.linkonce.sb.*)
 		*(.bss .bss.*)
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
+		__bss_end = .;
 	} >ram AT>ram :ram
 
 	.stack : {
