@@ -8,8 +8,8 @@
 
 #define CR2_MAX_THREADS 3
 
-cr2_thread_t* cr2_current_thread;
-cr2_thread_t cr2_idle_thread;
+cr2_thread_t* volatile cr2_current_thread;
+static cr2_thread_t cr2_idle_thread;
 static cr2_thread_t* volatile cr2_threads[CR2_MAX_THREADS] = {0};
 
 void cr2_init(void) {

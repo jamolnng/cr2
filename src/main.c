@@ -44,11 +44,11 @@ int main() {
   uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
-  gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
 
-  char str[64] = "Running at Hz: ";
-  ultoa(get_cpu_freq(), &str[15], 63, 10);
+  char str[64] = "Running at ";
+  ultoa(get_cpu_freq(), &str[strlen(str)], 63, 10);
   uart_puts(UART0, str, strlen(str));
+  uart_puts(UART0, " Hz\n", 5);
 
   cr2_init();
   cr2_thread_init(&thread1, blink1, stack1, STACK_SIZE);
@@ -57,9 +57,16 @@ int main() {
   cr2_start();
 
   for (;;) {
-    for (int i = 0; i < 400000; ++i)
-      ;
-    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
+    uart_gets(UART0, str, 5);
+    if (strcmp(str, "on") == 0) {
+      gpio_reg(GPIO_REG_OUTPUT_VAL) &= ~BLUE_LED;
+    }
+    if (strcmp(str, "off") == 0) {
+      gpio_reg(GPIO_REG_OUTPUT_VAL) |= BLUE_LED;
+    }
+    // for (int i = 0; i < 400000; ++i)
+    //  ;
+    // gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
 
   return 0;
