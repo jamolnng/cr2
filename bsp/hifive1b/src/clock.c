@@ -37,26 +37,34 @@ void clock_init_hfrosc(unsigned int div, unsigned int trim) {
     ;
   // select ring oscillator
   prci_reg(PRCI_REG_PLL_CFG) &= ~PLL_SEL;
+  // warm up clock
+  measure_cpu_freq(100);
+  __asm__("fence.i");
 }
 
 void clock_init_hfxosc() {
   if (prci_reg(PRCI_REG_PLL_CFG) & PLL_SEL) {
     clock_init_hfrosc(4, 16);
   }
+  // "overclock" the QSPI a bit since it
+  // should be able to run at a max of 100MHz
+  // and this tops it out at 8MHz
+  qspi0_reg(SPI_REG_SCK_DIV) = 0;
   // set pll divide by one
   prci_reg(PRCI_REG_PLL_DIV) = 0x100u;
   // select pll select, reference, and bypass
   prci_reg(PRCI_REG_PLL_CFG) = (PLL_SEL | PLL_BYPASS);
   // warm up clock
   measure_cpu_freq(100);
+  __asm__("fence.i");
 }
 
 void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
   if (prci_reg(PRCI_REG_PLL_CFG) & PLL_SEL) {
     clock_init_hfrosc(4, 16);
   }
-  // need to set QSPI clock divider appropriately
-  qspi0_reg(SPI_REG_SCK_DIV) = 8;
+  // need to set QSPI clock divider temporarily
+  qspi0_reg(SPI_REG_SCK_DIV) = 4;
   // configure pll
   prci_reg(PRCI_REG_PLL_CFG) = (PLL_BYPASS | PLL_R(r) | PLL_F(f) | PLL_Q(q));
 
@@ -73,6 +81,15 @@ void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
   prci_reg(PRCI_REG_PLL_CFG) |= PLL_SEL;
   // warm up clock
   measure_cpu_freq(100);
+  __asm__("fence.i");
+
+  // calculate new QSPI divisor for max performance
+  unsigned long fin = get_cpu_freq();
+  unsigned int new_div = 0;
+  while (fin / (2 * (new_div + 1)) > 50000000u) {
+    new_div++;
+  }
+  qspi0_reg(SPI_REG_SCK_DIV) = new_div;
 }
 
 unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
@@ -85,8 +102,6 @@ unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
     start_mtime = mtime_lo();
   } while (start_mtime == tmp);
 
-  // disable interrupts
-  __asm__("csrci mstatus, 8");
   unsigned long start_mcycle;
   __asm__ volatile("csrr %0, mcycle" : "=r"(start_mcycle));
 
@@ -95,8 +110,6 @@ unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
   } while (delta_mtime < n);
 
   __asm__ volatile("csrr %0, mcycle" : "=r"(tmp));
-  // enable interrupts
-  __asm__("csrsi mstatus, 8");
 
   unsigned long delta_mcycle = tmp - start_mcycle;
   return (delta_mcycle / delta_mtime) * mtime_freq +

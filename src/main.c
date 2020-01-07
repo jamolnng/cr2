@@ -33,9 +33,9 @@ cr2_thread_t thread1;
 cr2_thread_t thread2;
 
 int main() {
-  // clock_init_hfxosc();
+  clock_init_hfxosc();
   // max f=38
-  clock_init_hfpll(1, 31, 1);
+  // clock_init_hfpll(1, 31, 1);
   uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
@@ -61,9 +61,30 @@ int main() {
       gpio_reg(GPIO_REG_OUTPUT_VAL) |= BLUE_LED;
     }
     if (strcmp(str, "hz") == 0) {
-      ultoa(measure_cpu_freq(100), str, 63, 10);
+      // disable interrupts
+      __asm__("csrci mstatus, 8");
+      unsigned long freq = measure_cpu_freq(100);
+      // enable interrupts
+      __asm__("csrsi mstatus, 8");
+      ultoa(freq, str, 63, 10);
       uart_puts(UART0, str, strlen(str));
       uart_puts(UART0, " Hz\n", 5);
+    }
+    if (strcmp(str, "x") == 0) {
+      // disable interrupts
+      __asm__("csrci mstatus, 8");
+      clock_init_hfxosc();
+      uart_init(UART0, 115200);
+      // enable interrupts
+      __asm__("csrsi mstatus, 8");
+    }
+    if (strcmp(str, "y") == 0) {
+      // disable interrupts
+      __asm__("csrci mstatus, 8");
+      clock_init_hfpll(1, 31, 1);
+      uart_init(UART0, 115200);
+      // enable interrupts
+      __asm__("csrsi mstatus, 8");
     }
   }
 
