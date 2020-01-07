@@ -42,12 +42,12 @@ _enter:
   csrc  mie, a5
 .option push
 .option norelax
-  la gp, __global_pointer$
+  la    gp, __global_pointer$
 .option pop
   la    t0, early_unhandled_exception
   csrw  mtvec, t0
   .weak __stack_pointer
-  la sp, __stack_pointer
+  la    sp, __stack_pointer
   call  _start
   .cfi_endproc
 
@@ -70,7 +70,7 @@ _start:
 bss_init_loop:
   sw    x0, 0(x26)
   addi  x26, x26, 4
-  ble x26, x27, bss_init_loop
+  ble   x26, x27, bss_init_loop
 bss_init_end:
 main_entry:
   # set argc = argv = 0
