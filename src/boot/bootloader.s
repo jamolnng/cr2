@@ -36,10 +36,10 @@ _enter:
   .cfi_startproc
   .cfi_undefined ra
   # disable interrupts
-  # csrci mstatus, 8
-  # lui   a5, 0x1
-  # addi  a5, a5, -1366 # 0xaaa
-  # csrc  mie, a5
+  csrci mstatus, 8
+  lui   a5, 0x1
+  addi  a5, a5, -1366 # 0xaaa
+  csrc  mie, a5
 .option push
 .option norelax
   la gp, __global_pointer$

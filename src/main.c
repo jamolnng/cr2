@@ -40,6 +40,8 @@ cr2_thread_t thread2;
 uintptr_t *currentTCB;
 
 int main() {
+  clock_init();
+  uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
