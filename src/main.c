@@ -29,18 +29,8 @@ void blink2(void) {
   }
 }
 
-#define STACK_SIZE 96
-
-uint32_t stack1[STACK_SIZE] __attribute__((aligned(8)));
 cr2_thread_t thread1;
-
-uint32_t stack2[STACK_SIZE] __attribute__((aligned(8)));
 cr2_thread_t thread2;
-
-__attribute__((noinline)) __attribute__((section(".itim"))) int initim(int x);
-__attribute__((noinline)) __attribute__((section(".itim"))) int initim(int x) {
-  return x * x;
-}
 
 int main() {
   clock_init();
@@ -54,16 +44,8 @@ int main() {
   uart_puts(UART0, " Hz\n", 5);
 
   cr2_init();
-  cr2_thread_init(&thread1, blink1, stack1, STACK_SIZE);
-  cr2_thread_init(&thread2, blink2, stack2, STACK_SIZE);
-
-  if (initim(2) != 4) {
-    uart_puts(UART0, "ITIM Failed", 11);
-  }
-
-  if (initim(2) == 4) {
-    uart_puts(UART0, "ITIM Success", 11);
-  }
+  cr2_thread_init(&thread1, blink1);
+  cr2_thread_init(&thread2, blink2);
 
   cr2_start();
 

@@ -12,7 +12,7 @@ void cr2_set_timer(void);
 
 cr2_thread_t* volatile cr2_current_thread;
 static cr2_thread_t cr2_idle_thread;
-static cr2_thread_t* volatile cr2_threads[CR2_MAX_THREADS] = {0};
+static cr2_thread_t* cr2_threads[CR2_MAX_THREADS] = {0};
 
 void cr2_init(void) {
   register uintptr_t trap_vec = (uintptr_t)&cr2_trap_vec_entry;
@@ -21,8 +21,7 @@ void cr2_init(void) {
     return;
   }
   __asm__("csrw mtvec, %0" ::"r"(trap_vec));
-  memset(*((cr2_thread_t**)&cr2_threads), 0,
-         CR2_MAX_THREADS * sizeof(cr2_thread_t*));
+  memset(cr2_threads, 0, CR2_MAX_THREADS * sizeof(cr2_thread_t*));
   cr2_current_thread = &cr2_idle_thread;
   cr2_threads[CR2_MAX_THREADS - 1] = &cr2_idle_thread;
 }
@@ -33,18 +32,17 @@ void cr2_start(void) {
   __asm__("csrsi mstatus, 0x8");        // enable global interrupts
 }
 
-void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th, uint32_t* stack,
-                     uint32_t stack_size) {
+void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
   static int cr2_next_thread = 0;
   if (cr2_next_thread == CR2_MAX_THREADS - 1) {
     return;
   }
-  uint32_t* sp = &stack[stack_size];
-  memset(stack, 0, stack_size * sizeof(uint32_t));
-  --sp;
-  *sp = *(uint32_t*)&th;
-  sp -= 31;
-  t->sp = (void*)sp;
+  uint32_t* stack_ptr = &(t->stack[CR2_STACK_SIZE]);
+  memset(t->stack, 0, CR2_STACK_SIZE * sizeof(uint32_t));
+  --stack_ptr;
+  *stack_ptr = *(uint32_t*)&th;
+  stack_ptr -= 31;
+  t->stack_ptr = (void*)stack_ptr;
   cr2_threads[cr2_next_thread++] = t;
 }
 

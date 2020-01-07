@@ -80,9 +80,9 @@ data_init_end:
   # init itim
   # first by clearning old itim by storing a
   # zero to the first byte after the itim region
-  la    t0, __itim_memory_end
-  sw    x0, 0(t0)
-  fence.i
+  # la    t0, __itim_memory_end
+  # sw    x0, 0(t0)
+  # fence.i
   la    t0, __itim_source_start
   la    t1, __itim_target_start
   la    t2, __itim_target_end
