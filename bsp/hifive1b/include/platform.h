@@ -1,51 +1,6 @@
 #ifndef __CR2_PLATFORM_H__
 #define __CR2_PLATFORM_H__
 
-#define read_csr(reg)                             \
-  __extension__({                                 \
-    unsigned long __tmp;                          \
-    asm volatile("csrr %0, " #reg : "=r"(__tmp)); \
-    __tmp;                                        \
-  })
-
-#define write_csr(reg, val)                                     \
-  __extension__({                                               \
-    if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-      asm volatile("csrw " #reg ", %0" ::"i"(val));             \
-    else                                                        \
-      asm volatile("csrw " #reg ", %0" ::"r"(val));             \
-  })
-
-#define swap_csr(reg, val)                                             \
-  __extension__({                                                      \
-    unsigned long __tmp;                                               \
-    if (__builtin_constant_p(val) && (unsigned long)(val) < 32)        \
-      asm volatile("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
-    else                                                               \
-      asm volatile("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "r"(val)); \
-    __tmp;                                                             \
-  })
-
-#define set_csr(reg, bit)                                              \
-  __extension__({                                                      \
-    unsigned long __tmp;                                               \
-    if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32)        \
-      asm volatile("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
-    else                                                               \
-      asm volatile("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
-    __tmp;                                                             \
-  })
-
-#define clear_csr(reg, bit)                                            \
-  __extension__({                                                      \
-    unsigned long __tmp;                                               \
-    if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32)        \
-      asm volatile("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
-    else                                                               \
-      asm volatile("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
-    __tmp;                                                             \
-  })
-
 #define GREEN_LED 0x00080000ul
 #define BLUE_LED 0x00200000ul
 #define RED_LED 0x00400000ul

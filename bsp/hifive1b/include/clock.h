@@ -6,7 +6,9 @@
 
 #include <platform.h>
 
-void clock_init();
+void clock_init_hfrosc(unsigned int div, unsigned int trim);
+void clock_init_16MHz();
+void clock_init_pll(unsigned int r, unsigned int f, unsigned int q);
 unsigned long get_timer_freq();
 unsigned long mtime_lo(void);
 uint32_t mtime_hi(void);
