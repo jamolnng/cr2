@@ -41,7 +41,7 @@ cr2 context frame:
 .set CR2_REGISTER_WIDTH, 4
 .set CR2_STACK_STORE_SIZE, 30
 
-.global crq_isr_stack_top
+.global cr2_isr_stack_top
 .global cr2_current_thread
 .global cr2_trap_vec_entry
 .global cr2_start_first_task
@@ -98,7 +98,7 @@ cr2_trap_vec_entry:
   # handle interrupt
 cr2_asynchronous_interrupt:
   sw   a1, 29 * 4(sp)
-  lw   sp, crq_isr_stack_top
+  lw   sp, cr2_isr_stack_top
   call cr2_sys_interrupt_handler
   j    cr2_restore_ctx
 
@@ -106,7 +106,7 @@ cr2_asynchronous_interrupt:
 cr2_synchronous_exception:
   addi a1, a1, 4
   sw   a1, 29 * 4(sp)
-  lw   sp, crq_isr_stack_top
+  lw   sp, cr2_isr_stack_top
   call cr2_sys_exception_handler
 
 cr2_restore_ctx:

@@ -22,7 +22,7 @@ static unsigned int cr2_thread_count;
 const unsigned int cr2_timer_tick_increment = 655;
 
 extern const uint32_t __cr2_irq_stack_top[];
-const uint32_t* crq_isr_stack_top = (const uint32_t*)__cr2_irq_stack_top;
+const uint32_t* cr2_isr_stack_top = (const uint32_t*)__cr2_irq_stack_top;
 
 void cr2_start(void) {
   cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
