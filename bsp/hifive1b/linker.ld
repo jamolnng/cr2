@@ -136,7 +136,10 @@ SECTIONS
   PROVIDE(__bss_end = ADDR(.bss) + SIZEOF(.bss));
 
   .stack : {
+    __stack_bottom = .;
     . += __stack_size;
+    __stack_top = .;
+    __cr2_irq_stack_top = .;
   } >ram AT>ram :ram
   PROVIDE(__stack_pointer = ADDR(.stack) + SIZEOF(.stack));
 

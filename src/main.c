@@ -46,47 +46,50 @@ int main() {
   uart_puts(UART0, str, strlen(str));
   uart_puts(UART0, " Hz\n", 5);
 
-  cr2_init();
   cr2_thread_init(&thread1, blink1);
   cr2_thread_init(&thread2, blink2);
-
   cr2_start();
 
-  for (;;) {
-    uart_gets(UART0, str, 5);
-    if (strcmp(str, "on") == 0) {
-      gpio_reg(GPIO_REG_OUTPUT_VAL) &= ~BLUE_LED;
-    }
-    if (strcmp(str, "off") == 0) {
-      gpio_reg(GPIO_REG_OUTPUT_VAL) |= BLUE_LED;
-    }
-    if (strcmp(str, "hz") == 0) {
-      // disable interrupts
-      __asm__("csrci mstatus, 8");
-      unsigned long freq = measure_cpu_freq(100);
-      // enable interrupts
-      __asm__("csrsi mstatus, 8");
-      ultoa(freq, str, 63, 10);
-      uart_puts(UART0, str, strlen(str));
-      uart_puts(UART0, " Hz\n", 5);
-    }
-    if (strcmp(str, "x") == 0) {
-      // disable interrupts
-      __asm__("csrci mstatus, 8");
-      clock_init_hfxosc();
-      uart_init(UART0, 115200);
-      // enable interrupts
-      __asm__("csrsi mstatus, 8");
-    }
-    if (strcmp(str, "y") == 0) {
-      // disable interrupts
-      __asm__("csrci mstatus, 8");
-      clock_init_hfpll(1, 31, 1);
-      uart_init(UART0, 115200);
-      // enable interrupts
-      __asm__("csrsi mstatus, 8");
-    }
-  }
+  // should not get here
+
+  // for (;;)
+  //   ;
+
+  // for (;;) {
+  //   uart_gets(UART0, str, 5);
+  //   if (strcmp(str, "on") == 0) {
+  //     gpio_reg(GPIO_REG_OUTPUT_VAL) &= ~BLUE_LED;
+  //   }
+  //   if (strcmp(str, "off") == 0) {
+  //     gpio_reg(GPIO_REG_OUTPUT_VAL) |= BLUE_LED;
+  //   }
+  //   if (strcmp(str, "hz") == 0) {
+  //     // disable interrupts
+  //     __asm__("csrci mstatus, 8");
+  //     unsigned long freq = measure_cpu_freq(100);
+  //     // enable interrupts
+  //     __asm__("csrsi mstatus, 8");
+  //     ultoa(freq, str, 63, 10);
+  //     uart_puts(UART0, str, strlen(str));
+  //     uart_puts(UART0, " Hz\n", 5);
+  //   }
+  //   if (strcmp(str, "x") == 0) {
+  //     // disable interrupts
+  //     __asm__("csrci mstatus, 8");
+  //     clock_init_hfxosc();
+  //     uart_init(UART0, 115200);
+  //     // enable interrupts
+  //     __asm__("csrsi mstatus, 8");
+  //   }
+  //   if (strcmp(str, "y") == 0) {
+  //     // disable interrupts
+  //     __asm__("csrci mstatus, 8");
+  //     clock_init_hfpll(1, 31, 1);
+  //     uart_init(UART0, 115200);
+  //     // enable interrupts
+  //     __asm__("csrsi mstatus, 8");
+  //   }
+  // }
 
   return 0;
 }

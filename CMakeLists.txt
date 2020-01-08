@@ -78,7 +78,7 @@ add_custom_target(cr2hex
 add_custom_target(cr2asm
     ALL
     BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -d $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.S"
+    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dS $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.S"
 )
 
 set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.hex")

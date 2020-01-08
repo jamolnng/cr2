@@ -4,17 +4,17 @@
 #include <stdint.h>
 
 #define CR2_MAX_THREADS 32
-#define CR2_STACK_SIZE 128
+#define CR2_THREAD_STACK_SIZE 128
+#define CR2_IRQ_STACK_SIZE 128
 
 // Thread Control Block
 typedef struct {
   void* stack_ptr __attribute__((aligned(4)));
-  uint32_t stack[CR2_STACK_SIZE] __attribute__((aligned(4)));
+  uint32_t stack[CR2_THREAD_STACK_SIZE] __attribute__((aligned(4)));
 } cr2_thread_t;
 
 typedef void (*cr2_thread_handler_t)();
 
-void cr2_init(void);
 void cr2_start(void);
 void cr2_schedule(void);
 void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th);
