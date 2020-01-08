@@ -79,5 +79,5 @@ void cr2_set_timer(void) {
   }
   clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
-  // timer_counter++;
+  timer_counter++;
 }
