@@ -14,6 +14,7 @@
 #define PLL_F(x) (((x)&0x7Fu) << 4)
 #define PLL_Q(x) (((x)&0x3u) << 10)
 #define PLL_SEL 0x10000u
+#define PLL_HFXOSC_SEL 0x20000u
 #define PLL_BYPASS 0x40000u
 #define PLL_LOCK 0x80000000u
 
@@ -53,7 +54,9 @@ void clock_init_hfxosc() {
   // set pll divide by one
   prci_reg(PRCI_REG_PLL_DIV) = 0x100u;
   // select pll select, reference, and bypass
-  prci_reg(PRCI_REG_PLL_CFG) = (PLL_SEL | PLL_BYPASS);
+  prci_reg(PRCI_REG_PLL_CFG) = (PLL_SEL | PLL_BYPASS | PLL_HFXOSC_SEL);
+  // disable hfrosc
+  prci_reg(PRCI_REG_HFROSC) &= ~0x40000000ul;
   // warm up clock
   measure_cpu_freq(100);
   __asm__("fence.i");
