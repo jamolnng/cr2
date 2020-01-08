@@ -38,13 +38,17 @@ cr2 context frame:
 0(sp)  x1
 */
 
-.set CR2_WORD_SIZE, 4
-.set CR2_CTX_SIZE, 30 * CR2_WORD_SIZE
+#.set CR2_WORD_SIZE, 4
+#.set CR2_CTX_SIZE, 30 * CR2_WORD_SIZE
+
+#define CR2_WORD_SIZE 4
+#define CR2_CTX_SIZE CR2_WORD_SIZE * 30
 
 .global cr2_isr_stack_top
 .global cr2_current_thread
 .global cr2_trap_vec_entry
 .global cr2_start_first_task
+.global cr2_thread_init_stack
 
 .align 2
 .func
@@ -205,6 +209,20 @@ cr2_start_first_task:
   # reset the stack
   addi sp, sp, CR2_CTX_SIZE
 
+  ret
+  .endfunc
+
+.func
+cr2_thread_init_stack:
+  csrr t0, mstatus
+  addi t1, x0, 0x188
+  slli t1, t1, 4
+  or   t0, t0, t1
+
+  addi a0, a0, -(2 * CR2_WORD_SIZE)
+  sw   a1, 1 * CR2_WORD_SIZE(a0)  # store return address
+  sw   t0, 0 * CR2_WORD_SIZE(a0)  # store mstatus
+  addi a0, a0, -(28 * CR2_WORD_SIZE)
   ret
   .endfunc
 

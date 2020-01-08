@@ -7,6 +7,9 @@
 #include <string.h>
 
 extern void cr2_start_first_task(void);
+extern void* cr2_thread_init_stack(cr2_stack_type_t* stack_ptr,
+                                   cr2_thread_handler_t function_addr);
+
 void cr2_sys_interrupt_handler(uintptr_t mcause);
 void cr2_sys_exception_handler(uintptr_t mcause);
 void cr2_set_timer(void);
@@ -20,9 +23,14 @@ static cr2_thread_t* cr2_threads[CR2_MAX_THREADS + 1];
 static unsigned int cr2_thread_count;
 
 const unsigned int cr2_timer_tick_increment = 655;
+extern const cr2_stack_type_t __cr2_irq_stack_top[];
+const cr2_stack_type_t* cr2_isr_stack_top =
+    (const cr2_stack_type_t*)__cr2_irq_stack_top;
 
-extern const uint32_t __cr2_irq_stack_top[];
-const uint32_t* cr2_isr_stack_top = (const uint32_t*)__cr2_irq_stack_top;
+void cr2_init(void) {
+  // enable interrupts
+  CR2_ENABLE_INT();
+}
 
 void cr2_start(void) {
   cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
@@ -39,21 +47,18 @@ void cr2_start(void) {
   cr2_start_first_task();
 }
 
+void cr2_schedule(void) {
+  // TODO
+}
+
 void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
   if (cr2_thread_count == CR2_MAX_THREADS - 1) {
     // TODO: error
     return;
   }
-  uint32_t* stack_ptr = &(t->stack[CR2_THREAD_STACK_SIZE]);
-  memset(t->stack, 0, CR2_THREAD_STACK_SIZE * sizeof(uint32_t));
-  union {
-    cr2_thread_handler_t func;
-    uint32_t ptr;
-  } helper = {.func = th};
-  *(--stack_ptr) = helper.ptr;
-  *(--stack_ptr) |= 0x1888;
-  stack_ptr -= 28;
-  t->stack_ptr = (void*)stack_ptr;
+  memset(t->stack, 0, CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
+  cr2_stack_type_t* stack_ptr = &(t->stack[CR2_THREAD_STACK_SIZE]);
+  t->stack_ptr = cr2_thread_init_stack(stack_ptr, th);
   cr2_threads[cr2_thread_count++] = t;
 }
 
@@ -68,10 +73,16 @@ void cr2_sys_interrupt_handler(uintptr_t mcause) {
       cr2_current_thread_id = 0;
     }
     cr2_current_thread = cr2_threads[cr2_current_thread_id];
+  } else {
+    for (;;)
+      ;
   }
 }
 
-void cr2_sys_exception_handler(uintptr_t mcause) {}
+void cr2_sys_exception_handler(uintptr_t mcause) {
+  for (;;)
+    ;
+}
 
 void cr2_set_timer(void) {
   uint64_t next = get_timer_value();
