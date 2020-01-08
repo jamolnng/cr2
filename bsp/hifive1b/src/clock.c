@@ -56,7 +56,7 @@ void clock_init_hfxosc() {
   // select pll select, reference, and bypass
   prci_reg(PRCI_REG_PLL_CFG) = (PLL_SEL | PLL_BYPASS | PLL_HFXOSC_SEL);
   // disable hfrosc
-  prci_reg(PRCI_REG_HFROSC) &= ~0x40000000ul;
+  prci_reg(PRCI_REG_HFROSC) &= ~ROSC_EN;
   // warm up clock
   measure_cpu_freq(100);
   __asm__("fence.i");
