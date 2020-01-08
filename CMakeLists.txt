@@ -41,7 +41,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${bsp}/linker.ld\"")
 
-file(GLOB_RECURSE SOURCES "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c")
+file(GLOB_RECURSE SOURCES "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
 file(GLOB_RECURSE PUBLIC_HEADERS "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 
