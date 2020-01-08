@@ -55,7 +55,14 @@ void cr2_start(void) {
 }
 
 void cr2_schedule(void) {
-  // TODO
+  if (cr2_thread_count == 0) {
+    return;
+  }
+  cr2_current_thread_id++;
+  if (cr2_current_thread_id == cr2_thread_count) {
+    cr2_current_thread_id = 0;
+  }
+  cr2_current_thread = cr2_threads[cr2_current_thread_id];
 }
 
 void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
@@ -84,14 +91,7 @@ void cr2_exit_critical_section(void) {
 void cr2_sys_interrupt_handler(uintptr_t mcause) {
   if (((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
     cr2_set_timer();
-    if (cr2_thread_count == 0) {
-      return;
-    }
-    cr2_current_thread_id++;
-    if (cr2_current_thread_id == cr2_thread_count) {
-      cr2_current_thread_id = 0;
-    }
-    cr2_current_thread = cr2_threads[cr2_current_thread_id];
+    cr2_schedule();
   } else {
     for (;;)
       ;
