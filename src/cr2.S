@@ -97,7 +97,7 @@ cr2_trap_vec_entry:
   csrr a1,  mepc
 
   # test for synchronous interrupt
-  srli a2,  a0, 31
+  srli a2,  a0, __riscv_xlen - 1
   beqz a2,  cr2_synchronous_exception
   # handle interrupt
 cr2_asynchronous_interrupt:
