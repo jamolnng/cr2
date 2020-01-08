@@ -6,10 +6,12 @@
 #include <platform.h>
 #include <string.h>
 
-#define CR2_ENABLE_INT() __asm__ volatile("csrsi mstatus, 8")
-#define CR2_DISABLE_INT() __asm__ volatile("csrci mstatus, 8")
-#define CR2_EMABLE_TIMER_INT() __asm__ volatile("csrs mie, %0" ::"r"(0x80))
-#define CR2_DISABLE_TIMER_INT() __asm__ volatile("csrc mie, %0" ::"r"(0x80))
+#define cr2_enable_interrupts() __asm__ volatile("csrsi mstatus, 8")
+#define cr2_disable_interrupts() __asm__ volatile("csrci mstatus, 8")
+#define cr2_enable_timer_interrupts() \
+  __asm__ volatile("csrs mie, %0" ::"r"(0x80))
+#define cr2_disable_timer_interrupts() \
+  __asm__ volatile("csrc mie, %0" ::"r"(0x80))
 #define CR2_TICK_INCREMENT 655
 
 extern void cr2_start_first_task(void);
@@ -18,7 +20,8 @@ extern void* cr2_thread_init_stack(cr2_stack_type_t* stack_ptr,
 
 void cr2_sys_interrupt_handler(uintptr_t mcause);
 void cr2_sys_exception_handler(uintptr_t mcause);
-void cr2_set_timer(void);
+static void cr2_set_timer(void);
+static void cr2_idle_thread_task(void);
 
 static cr2_thread_t cr2_idle_thread;
 
@@ -35,32 +38,32 @@ const cr2_stack_type_t* cr2_isr_stack_top =
 static unsigned int cr2_critical_nesting = 0xCAFEBABE;
 
 void cr2_init(void) {
-  // enable interrupts
-  CR2_ENABLE_INT();
+  cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
+  cr2_current_thread = &cr2_idle_thread;
+  memset(cr2_idle_thread.stack, 0,
+         CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
+  cr2_stack_type_t* stack_ptr = &(cr2_idle_thread.stack[CR2_THREAD_STACK_SIZE]);
+  cr2_idle_thread.stack_ptr =
+      cr2_thread_init_stack(stack_ptr, cr2_idle_thread_task);
 }
 
 void cr2_start(void) {
-  cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
-  if (cr2_thread_count == 0) {
-    cr2_current_thread = &cr2_idle_thread;
-    cr2_current_thread_id = CR2_MAX_THREADS;
-  } else {
-    cr2_current_thread = cr2_threads[0];
-    cr2_current_thread_id = 0;
-  }
-  cr2_set_timer();
-  CR2_EMABLE_TIMER_INT();  // enable timer interrupts
   cr2_critical_nesting = 0;
+  cr2_schedule();
+  cr2_set_timer();
+  cr2_enable_timer_interrupts();  // enable timer interrupts
+  cr2_enable_interrupts();        // enable interrupts
   cr2_start_first_task();
 }
 
 void cr2_schedule(void) {
   if (cr2_thread_count == 0) {
-    return;
-  }
-  cr2_current_thread_id++;
-  if (cr2_current_thread_id == cr2_thread_count) {
-    cr2_current_thread_id = 0;
+    cr2_current_thread_id = CR2_MAX_THREADS;
+  } else {
+    cr2_current_thread_id++;
+    if (cr2_current_thread_id == cr2_thread_count) {
+      cr2_current_thread_id = 0;
+    }
   }
   cr2_current_thread = cr2_threads[cr2_current_thread_id];
 }
@@ -77,14 +80,14 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
 }
 
 void cr2_enter_critical_section(void) {
-  CR2_DISABLE_INT();
+  cr2_disable_interrupts();
   cr2_critical_nesting++;
 }
 
 void cr2_exit_critical_section(void) {
   cr2_critical_nesting--;
   if (cr2_critical_nesting == 0) {
-    CR2_ENABLE_INT();
+    cr2_enable_interrupts();
   }
 }
 
@@ -108,4 +111,9 @@ void cr2_set_timer(void) {
   next += CR2_TICK_INCREMENT;
   clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
+}
+
+static void cr2_idle_thread_task(void) {
+  for (;;)
+    ;
 }

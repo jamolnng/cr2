@@ -217,6 +217,7 @@ cr2_thread_init_stack:
   csrr t0, mstatus
   addi t1, x0, 0x188
   slli t1, t1, 4
+  ori  t1, t1, 8  # enable interrupts (MIE bit)
   or   t0, t0, t1
 
   addi a0, a0, -(2 * CR2_WORD_SIZE)
