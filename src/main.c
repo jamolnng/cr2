@@ -12,6 +12,7 @@
 void set_timer(void);
 void blink1(void);
 void blink2(void);
+void blink3(void);
 int main();
 
 void blink1(void) {
@@ -29,8 +30,17 @@ void blink2(void) {
   }
 }
 
+void blink3(void) {
+  for (;;) {
+    for (int i = 0; i < 4000000; ++i)
+      ;
+    gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
+  }
+}
+
 cr2_thread_t thread1;
 cr2_thread_t thread2;
+cr2_thread_t thread3;
 
 int main() {
   clock_init_hfxosc();
@@ -49,6 +59,7 @@ int main() {
   cr2_init();
   cr2_thread_init(&thread1, blink1);
   cr2_thread_init(&thread2, blink2);
+  cr2_thread_init(&thread3, blink3);
   cr2_start();
 
   // should not get here
