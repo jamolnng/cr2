@@ -1,6 +1,6 @@
+.global _enter
 .section .init.enter
 _enter:
-  .global _enter
   # clear registers
   mv     x1, x0
   mv     x2, x0
