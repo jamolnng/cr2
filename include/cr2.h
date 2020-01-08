@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define CR2_MAX_THREADS 8
+#define CR2_MAX_THREADS 32
 #define CR2_STACK_SIZE 128
 
 // Thread Control Block
