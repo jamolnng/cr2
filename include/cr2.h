@@ -16,6 +16,7 @@ typedef struct {
   void* stack_ptr __attribute__((aligned(4)));
   uint32_t timeout __attribute__((aligned(4)));
   cr2_stack_type_t stack[CR2_THREAD_STACK_SIZE] __attribute__((aligned(4)));
+  unsigned int priority;
 } cr2_thread_t;
 
 typedef void (*cr2_thread_handler_t)();
@@ -23,7 +24,8 @@ typedef void (*cr2_thread_handler_t)();
 void cr2_init(void);
 void cr2_start(void);
 void cr2_schedule(void);
-void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th);
+void cr2_thread_init(cr2_thread_t* t, unsigned int priority,
+                     cr2_thread_handler_t th);
 void cr2_enter_critical_section(void);
 void cr2_exit_critical_section(void);
 void cr2_delay(uint32_t timeout);

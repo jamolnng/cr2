@@ -53,9 +53,9 @@ int main() {
   uart_puts(UART0, " Hz\n", 5);
 
   cr2_init();
-  cr2_thread_init(&thread1, blink1);
-  cr2_thread_init(&thread2, blink2);
-  cr2_thread_init(&thread3, blink3);
+  cr2_thread_init(&thread1, 0, blink1);
+  cr2_thread_init(&thread2, 1, blink2);
+  cr2_thread_init(&thread3, 2, blink3);
   cr2_start();
 
   // should not get here

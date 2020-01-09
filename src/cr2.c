@@ -24,12 +24,9 @@ static void cr2_tick(void);
 static void cr2_idle_thread_task(void);
 
 static cr2_thread_t cr2_idle_thread;
-
 cr2_thread_t* volatile cr2_current_thread;
-static unsigned int cr2_current_thread_id;
-
-static cr2_thread_t* cr2_threads[CR2_MAX_THREADS + 1];
-static unsigned int cr2_thread_count;
+static cr2_thread_t* cr2_threads[CR2_MAX_THREADS + 1] = {0};
+static uint32_t cr2_thread_ready;
 
 extern const cr2_stack_type_t __cr2_irq_stack_top[];
 const cr2_stack_type_t* cr2_isr_stack_top =
@@ -37,11 +34,9 @@ const cr2_stack_type_t* cr2_isr_stack_top =
 
 static unsigned int cr2_critical_nesting = 0xCAFEBABE;
 
-static uint32_t cr2_thread_ready;
-
 void cr2_init(void) {
+  cr2_idle_thread.priority = CR2_MAX_THREADS;
   cr2_current_thread = &cr2_idle_thread;
-  cr2_current_thread_id = CR2_MAX_THREADS;
   memset(cr2_idle_thread.stack, 0,
          CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr = &(cr2_idle_thread.stack[CR2_THREAD_STACK_SIZE]);
@@ -62,28 +57,33 @@ void cr2_start(void) {
 void cr2_schedule(void) {
   if (cr2_thread_ready == 0) {
     cr2_current_thread = &cr2_idle_thread;
-    cr2_current_thread_id = CR2_MAX_THREADS;
   } else {
-    do {
-      cr2_current_thread_id++;
-      if (cr2_current_thread_id >= cr2_thread_count) {
-        cr2_current_thread_id = 0;
-      }
-    } while ((cr2_thread_ready & (1u << cr2_current_thread_id)) == 0);
-    cr2_current_thread = cr2_threads[cr2_current_thread_id];
+    unsigned int count = 0;
+    uint32_t working_set = cr2_thread_ready;
+    while (!(working_set & 1u)) {
+      count++;
+      working_set >>= 1;
+    }
+    cr2_current_thread = cr2_threads[count];
   }
 }
 
-void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
-  if (cr2_thread_count == CR2_MAX_THREADS - 1) {
+void cr2_thread_init(cr2_thread_t* t, unsigned int priority,
+                     cr2_thread_handler_t th) {
+  if (priority >= CR2_MAX_THREADS) {
+    // TODO: error
+    return;
+  }
+  if (cr2_threads[priority] != 0) {
     // TODO: error
     return;
   }
   memset(t->stack, 0, CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr = &(t->stack[CR2_THREAD_STACK_SIZE]);
   t->stack_ptr = cr2_thread_init_stack(stack_ptr, th);
-  cr2_thread_ready |= (1u << cr2_thread_count);
-  cr2_threads[cr2_thread_count++] = t;
+  t->priority = priority;
+  cr2_thread_ready |= (1u << priority);
+  cr2_threads[priority] = t;
 }
 
 void cr2_enter_critical_section(void) {
@@ -103,7 +103,7 @@ void cr2_exit_critical_section(void) {
 void cr2_delay(uint32_t timeout) {
   cr2_enter_critical_section();
   cr2_current_thread->timeout = timeout;
-  cr2_thread_ready &= ~(1u << cr2_current_thread_id);
+  cr2_thread_ready &= ~(1u << cr2_current_thread->priority);
   cr2_exit_critical_section();
   cr2_yield();
 }
@@ -157,8 +157,8 @@ void cr2_set_timer(void) {
 }
 
 void cr2_tick(void) {
-  for (unsigned int i = 0; i < cr2_thread_count; i++) {
-    if (cr2_threads[i]->timeout != 0) {
+  for (unsigned int i = 0; i < CR2_MAX_THREADS; i++) {
+    if (cr2_threads[i] != 0 && cr2_threads[i]->timeout != 0) {
       --(cr2_threads[i]->timeout);
       if (cr2_threads[i]->timeout == 0) {
         cr2_thread_ready |= (1u << i);
