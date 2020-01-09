@@ -21,6 +21,7 @@ extern void* cr2_thread_init_stack(cr2_stack_type_t* stack_ptr,
 void cr2_sys_interrupt_handler(uintptr_t mcause);
 void cr2_sys_exception_handler(uintptr_t mcause);
 static void cr2_set_timer(void);
+static void cr2_tick(void);
 static void cr2_idle_thread_task(void);
 
 static cr2_thread_t cr2_idle_thread;
@@ -37,35 +38,41 @@ const cr2_stack_type_t* cr2_isr_stack_top =
 
 static unsigned int cr2_critical_nesting = 0xCAFEBABE;
 
+static uint32_t cr2_thread_ready;
+
 void cr2_init(void) {
-  cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
   cr2_current_thread = &cr2_idle_thread;
+  cr2_current_thread_id = CR2_MAX_THREADS;
   memset(cr2_idle_thread.stack, 0,
          CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr = &(cr2_idle_thread.stack[CR2_THREAD_STACK_SIZE]);
   cr2_idle_thread.stack_ptr =
       cr2_thread_init_stack(stack_ptr, cr2_idle_thread_task);
+  cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
 }
 
 void cr2_start(void) {
   cr2_critical_nesting = 0;
   cr2_schedule();
   cr2_set_timer();
-  cr2_enable_timer_interrupts();  // enable timer interrupts
-  cr2_enable_interrupts();        // enable interrupts
+  cr2_enable_timer_interrupts();
+  cr2_enable_interrupts();
   cr2_start_first_task();
 }
 
 void cr2_schedule(void) {
-  if (cr2_thread_count == 0) {
+  if (cr2_thread_ready == 0) {
+    cr2_current_thread = &cr2_idle_thread;
     cr2_current_thread_id = CR2_MAX_THREADS;
   } else {
-    cr2_current_thread_id++;
-    if (cr2_current_thread_id == cr2_thread_count) {
-      cr2_current_thread_id = 0;
-    }
+    do {
+      cr2_current_thread_id++;
+      if (cr2_current_thread_id >= cr2_thread_count) {
+        cr2_current_thread_id = 0;
+      }
+    } while ((cr2_thread_ready & (1u << cr2_current_thread_id)) == 0);
+    cr2_current_thread = cr2_threads[cr2_current_thread_id];
   }
-  cr2_current_thread = cr2_threads[cr2_current_thread_id];
 }
 
 void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
@@ -76,6 +83,7 @@ void cr2_thread_init(cr2_thread_t* t, cr2_thread_handler_t th) {
   memset(t->stack, 0, CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr = &(t->stack[CR2_THREAD_STACK_SIZE]);
   t->stack_ptr = cr2_thread_init_stack(stack_ptr, th);
+  cr2_thread_ready |= (1u << cr2_thread_count);
   cr2_threads[cr2_thread_count++] = t;
 }
 
@@ -87,23 +95,44 @@ void cr2_enter_critical_section(void) {
 void cr2_exit_critical_section(void) {
   cr2_critical_nesting--;
   if (cr2_critical_nesting == 0) {
+    __asm__ volatile("fence");
+    __asm__ volatile("fence.i");
     cr2_enable_interrupts();
   }
 }
 
+void cr2_delay(uint32_t timeout) {
+  cr2_enter_critical_section();
+  cr2_current_thread->timeout = timeout;
+  cr2_thread_ready &= ~(1u << cr2_current_thread_id);
+  cr2_exit_critical_section();
+  cr2_yield();
+}
+
 void cr2_sys_interrupt_handler(uintptr_t mcause) {
   if (((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
+    cr2_tick();
     cr2_set_timer();
     cr2_schedule();
   } else {
-    for (;;)
-      ;
+    for (;;) {
+      for (int i = 0; i < 100000; ++i)
+        ;
+      gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
+    }
   }
 }
 
 void cr2_sys_exception_handler(uintptr_t mcause) {
-  for (;;)
-    ;
+  if (mcause == ERQ_M_ECALL) {
+    cr2_schedule();
+  } else {
+    for (;;) {
+      for (int i = 0; i < 100000; ++i)
+        ;
+      gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
+    }
+  }
 }
 
 void cr2_set_timer(void) {
@@ -113,7 +142,19 @@ void cr2_set_timer(void) {
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
 }
 
-static void cr2_idle_thread_task(void) {
-  for (;;)
-    ;
+void cr2_tick(void) {
+  for (unsigned int i = 0; i < cr2_thread_count; i++) {
+    if (cr2_threads[i]->timeout != 0) {
+      --(cr2_threads[i]->timeout);
+      if (cr2_threads[i]->timeout == 0) {
+        cr2_thread_ready |= (1u << i);
+      }
+    }
+  }
+}
+
+void cr2_idle_thread_task(void) {
+  for (;;) {
+    __asm__ volatile("wfi");
+  }
 }

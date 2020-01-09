@@ -9,6 +9,7 @@
 #define TMR_INT_EN 0
 
 #define IRQ_M_TIMER 7
+#define ERQ_M_ECALL 11
 #define MIP_MTIP (1 << IRQ_M_TIMER)
 
 #define MCAUSE_INT 0x80000000

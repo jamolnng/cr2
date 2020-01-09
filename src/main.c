@@ -17,23 +17,20 @@ int main();
 
 void blink1(void) {
   for (;;) {
-    for (int i = 0; i < 2000000; ++i)
-      ;
+    cr2_delay(100);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
 void blink2(void) {
   for (;;) {
-    for (int i = 0; i < 1000000; ++i)
-      ;
+    cr2_delay(50);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
 }
 
 void blink3(void) {
   for (;;) {
-    for (int i = 0; i < 4000000; ++i)
-      ;
+    cr2_delay(200);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
 }
@@ -44,15 +41,14 @@ cr2_thread_t thread3;
 
 int main() {
   clock_init_hfxosc();
-  // max f=38
-  // clock_init_hfpll(1, 31, 1);
+  // max f=37
+  // clock_init_hfpll(1, 37, 1);
   uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
 
   char str[64] = "Running at ";
-  measure_cpu_freq(100);
-  ultoa(measure_cpu_freq(100), &str[strlen(str)], 63, 10);
+  ultoa(get_cpu_freq(), &str[strlen(str)], 63, 10);
   uart_puts(UART0, str, strlen(str));
   uart_puts(UART0, " Hz\n", 5);
 
