@@ -17,13 +17,13 @@ int main();
 
 void blink1(void) {
   for (;;) {
-    cr2_delay(100);
+    cr2_delay(50);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
 void blink2(void) {
   for (;;) {
-    cr2_delay(50);
+    cr2_delay(100);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= GREEN_LED;
   }
 }
