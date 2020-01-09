@@ -119,4 +119,4 @@ unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
          ((delta_mcycle % delta_mtime) * mtime_freq) / delta_mtime;
 }
 
-unsigned long get_cpu_freq() { return measure_cpu_freq(10); }
+unsigned long get_cpu_freq() { return measure_cpu_freq(50); }
