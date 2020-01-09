@@ -12,7 +12,6 @@
   __asm__ volatile("csrs mie, %0" ::"r"(0x80))
 #define cr2_disable_timer_interrupts() \
   __asm__ volatile("csrc mie, %0" ::"r"(0x80))
-#define CR2_TICK_INCREMENT 655
 
 extern void cr2_start_first_task(void);
 extern void* cr2_thread_init_stack(cr2_stack_type_t* stack_ptr,
@@ -136,8 +135,23 @@ void cr2_sys_exception_handler(uintptr_t mcause) {
 }
 
 void cr2_set_timer(void) {
+  static unsigned int tick_min, tick_max, tick_mod, tick_count;
+  if (tick_min == 0) {
+    unsigned int rtc_freq = get_timer_freq();
+    tick_min = rtc_freq / CR2_TICK_RATE_HZ;
+    tick_max = tick_min + 1;
+    tick_mod = CR2_TICK_RATE_HZ - (rtc_freq % CR2_TICK_RATE_HZ);
+  }
   uint64_t next = get_timer_value();
-  next += CR2_TICK_INCREMENT;
+  if (tick_count >= tick_mod) {
+    next += tick_max;
+  } else {
+    next += tick_min;
+  }
+  tick_count++;
+  if (tick_count == CR2_TICK_RATE_HZ) {
+    tick_count = 0;
+  }
   clint_reg(CLINT_REG_MTIMECMP) = (uint32_t)(next);
   clint_reg(CLINT_REG_MTIMECMP + 4) = (uint32_t)(next >> 32);
 }

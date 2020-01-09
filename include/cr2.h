@@ -5,6 +5,7 @@
 
 #define CR2_MAX_THREADS 32
 #define CR2_THREAD_STACK_SIZE 128
+#define CR2_TICK_RATE_HZ 100
 
 #define cr2_yield() __asm__ volatile("ecall")
 
