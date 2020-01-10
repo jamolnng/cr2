@@ -40,7 +40,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -Werror -Wno-unused -Winline -Wconversion -Wfloat-equal -ffreestanding -fdata-sections \
     -ffunction-sections -Wl,--gc-sections")
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_C_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${bsp}/linker.ld\"")
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${bsp}/linker.ld\"")
 
 file(GLOB_RECURSE SOURCES "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
 file(GLOB_RECURSE PUBLIC_HEADERS "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
@@ -51,7 +52,7 @@ set_source_files_properties("src/cr2.S" PROPERTIES COMPILE_FLAGS "-x assembler-w
 add_executable(cr2 ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
 target_include_directories(cr2 PUBLIC include "${bsp}/include" "libc/include")
-set_target_properties(${TARGET_NAME} PROPERTIES LINK_DEPENDS "${bsp}/linker.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/linker.ld")
 
 add_custom_target(cr2hex
     ALL
