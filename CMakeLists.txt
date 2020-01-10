@@ -50,8 +50,9 @@ file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 set_source_files_properties("src/cr2.S" PROPERTIES COMPILE_FLAGS "-x assembler-with-cpp")
 
 add_executable(cr2 ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
+target_link_libraries(cr2 c gcc)
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
-target_include_directories(cr2 PUBLIC include "${bsp}/include" "libc/include")
+target_include_directories(cr2 PUBLIC include "${bsp}/include")
 set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/linker.ld")
 
 add_custom_target(cr2hex
@@ -63,7 +64,7 @@ add_custom_target(cr2hex
 add_custom_target(cr2asm
     ALL
     BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dS $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.S"
+    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dSC $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.S"
 )
 
 set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.hex")
