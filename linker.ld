@@ -1,28 +1,12 @@
 OUTPUT_ARCH("riscv")
  
 ENTRY(_enter)
- 
-MEMORY
-{
-  flash (rxai!w) : ORIGIN = 0x20010000, LENGTH = 0x6a120
-  itim (wx!rai) : ORIGIN = 0x8000000, LENGTH = 0x2000
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 0x4000
-}
 
-PHDRS
-{
-  flash PT_LOAD;
-  ram PT_LOAD;
-  ram_init PT_LOAD;
-  itim PT_LOAD;
-  itim_init PT_LOAD;
-}
+INCLUDE memory.ld
 
 SECTIONS
 {
-  __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
-  PROVIDE(__stack_size = __stack_size);
-  __heap_size = DEFINED(__heap_size) ? __heap_size : 0x800;
+  INCLUDE stack_heap.ld
 
   .init : {
     KEEP(*(.init.enter))
@@ -95,19 +79,13 @@ SECTIONS
     KEEP(*(.dtors))
   } >flash AT>flash :flash
 
-  .itim : ALIGN(8) {
-    *(.itim .itim.*)
-  } >itim AT>flash :itim_init
-  PROVIDE(__itim_source_start = LOADADDR(.itim));
-  PROVIDE(__itim_target_start = ADDR(.itim) );
-  PROVIDE(__itim_target_end = ADDR(.itim) + SIZEOF(.itim));
-  PROVIDE(__itim_memory_end = ORIGIN(itim) + LENGTH(itim));
+  INCLUDE sections.ld
 
   .data : ALIGN(8) {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
     . = ALIGN(8);
-    PROVIDE(__global_pointer$ = . + 0x800);
+    INCLUDE global_ptr.ld
     *(.sdata .sdata.* .sdata2.*)
     *(.gnu.linkonce.s.*)
     . = ALIGN(8);
@@ -120,6 +98,8 @@ SECTIONS
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
+    *(.gcc_except_table)
+    *(.gcc_except_table.*)
   } >ram AT>flash :ram_init
   PROVIDE(__data_source_start = LOADADDR(.data));
   PROVIDE(__data_target_start = ADDR(.data));
@@ -145,7 +125,7 @@ SECTIONS
 
   .heap : {
     PROVIDE(__heap_target_start = .);
-    . = __heap_size;
+    . += __heap_size;
     PROVIDE(__heap_target_end = .);
     PROVIDE(__heap_end = .);
     PROVIDE(end = .);

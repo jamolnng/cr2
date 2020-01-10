@@ -98,9 +98,25 @@ main_entry:
   # ensure all data and instructions are done
   fence
   fence.i
+  .global bsp_init
+  call  bsp_init
   # set argc = argv = 0
   mv    x0, a0
   mv    x0, a1
   call  main
   call  exit
   .cfi_endproc
+
+.section .text
+.global abort
+abort:
+  lui   a0, %hi(abort_msg)
+  addi  a0, a0, %lo(abort_msg)
+  jal   ra, puts
+2:
+  wfi
+  j     2b
+
+.section .rodata
+abort_msg:
+  .string "ABORT!"

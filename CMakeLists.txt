@@ -33,7 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_RELEASE "-Os")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-exceptions")
 set(CMAKE_ASM_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 set(CMAKE_ASM_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
@@ -46,19 +46,21 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}")
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${bsp}/linker.ld\"")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L\"${bsp}/\" -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${CMAKE_SOURCE_DIR}/linker.ld\"")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
-file(GLOB_RECURSE PUBLIC_HEADERS "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
+file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 
-set_source_files_properties("src/cr2.S" PROPERTIES COMPILE_FLAGS "-x assembler-with-cpp")
-
 add_executable(cr2 ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
-target_link_libraries(cr2 g_nano m nosys)
+target_link_libraries(cr2 c gcc stdc++ g m nosys)
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
 target_include_directories(cr2 PUBLIC include "${bsp}/include")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/linker.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${CMAKE_SOURCE_DIR}/linker.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/sections.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/memory.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/stack_heap.ld")
+set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/global_ptr.ld")
 
 add_custom_target(cr2hex
     ALL

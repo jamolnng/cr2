@@ -23,7 +23,9 @@ static void cr2_set_timer(void);
 static void cr2_tick(void);
 static void cr2_idle_thread_task(void);
 
+#define CR2_IDLE_THREAD_STACK_SIZE 64
 static cr2_thread_t cr2_idle_thread;
+static cr2_stack_type_t cr2_idle_thread_stack[CR2_IDLE_THREAD_STACK_SIZE];
 cr2_thread_t* volatile cr2_current_thread;
 static cr2_thread_t* cr2_threads[CR2_MAX_THREADS + 1] = {0};
 static uint32_t cr2_thread_ready;
@@ -35,11 +37,14 @@ const cr2_stack_type_t* cr2_isr_stack_top =
 static unsigned int cr2_critical_nesting = 0xCAFEBABE;
 
 void cr2_init(void) {
+  cr2_idle_thread.stack = cr2_idle_thread_stack;
+  cr2_idle_thread.stack_size = CR2_IDLE_THREAD_STACK_SIZE;
   cr2_idle_thread.priority = CR2_MAX_THREADS;
   cr2_current_thread = &cr2_idle_thread;
   memset(cr2_idle_thread.stack, 0,
-         CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
-  cr2_stack_type_t* stack_ptr = &(cr2_idle_thread.stack[CR2_THREAD_STACK_SIZE]);
+         cr2_idle_thread.stack_size * sizeof(cr2_stack_type_t));
+  cr2_stack_type_t* stack_ptr =
+      &(cr2_idle_thread.stack[cr2_idle_thread.stack_size]);
   cr2_idle_thread.stack_ptr =
       cr2_thread_init_stack(stack_ptr, cr2_idle_thread_task);
   cr2_threads[CR2_MAX_THREADS] = &cr2_idle_thread;
@@ -78,8 +83,8 @@ void cr2_thread_init(cr2_thread_t* t, unsigned int priority,
     // TODO: error
     return;
   }
-  memset(t->stack, 0, CR2_THREAD_STACK_SIZE * sizeof(cr2_stack_type_t));
-  cr2_stack_type_t* stack_ptr = &(t->stack[CR2_THREAD_STACK_SIZE]);
+  memset(t->stack, 0, t->stack_size * sizeof(cr2_stack_type_t));
+  cr2_stack_type_t* stack_ptr = &(t->stack[t->stack_size]);
   t->stack_ptr = cr2_thread_init_stack(stack_ptr, th);
   t->priority = priority;
   cr2_thread_ready |= (1u << priority);
