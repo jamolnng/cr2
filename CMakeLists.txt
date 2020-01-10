@@ -50,7 +50,7 @@ file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 set_source_files_properties("src/cr2.S" PROPERTIES COMPILE_FLAGS "-x assembler-with-cpp")
 
 add_executable(cr2 ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
-target_link_libraries(cr2 c gcc)
+target_link_libraries(cr2 c_nano g_nano m nosys)
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
 target_include_directories(cr2 PUBLIC include "${bsp}/include")
 set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/linker.ld")

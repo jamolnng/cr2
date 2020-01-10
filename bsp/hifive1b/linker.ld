@@ -148,5 +148,6 @@ SECTIONS
     . = __heap_size;
     PROVIDE(__heap_target_end = .);
     PROVIDE(__heap_end = .);
+    PROVIDE(end = .);
   } >ram AT>ram :ram
 }

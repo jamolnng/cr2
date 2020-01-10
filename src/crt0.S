@@ -105,6 +105,12 @@ bss_init_loop:
   addi  x26, x26, 4
   ble   x26, x27, bss_init_loop
 bss_init_end:
+
+  # ctors and dtors
+  la a0, __libc_fini_array
+  call atexit
+  call __libc_init_array
+
 main_entry:
   # ensure all data and instructions are done
   fence
@@ -113,4 +119,5 @@ main_entry:
   mv    x0, a0
   mv    x0, a1
   call  main
+  call  exit
   .cfi_endproc

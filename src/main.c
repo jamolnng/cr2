@@ -3,6 +3,7 @@
 #include <gpio.h>
 #include <memory_map.h>
 #include <platform.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <uart.h>
@@ -17,7 +18,7 @@ int main();
 
 void blink1(void) {
   for (;;) {
-    cr2_delay(50);
+    cr2_delay(200);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
@@ -30,7 +31,7 @@ void blink2(void) {
 
 void blink3(void) {
   for (;;) {
-    cr2_delay(200);
+    cr2_delay(50);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
   }
 }
@@ -41,16 +42,15 @@ cr2_thread_t thread3;
 
 int main() {
   clock_init_hfxosc();
+  uart_init(UART0, 115200);
   // max f=37
   // clock_init_hfpll(1, 37, 1);
-  uart_init(UART0, 115200);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
 
-  char str[64] = "Running at ";
-  ultoa(get_cpu_freq(), &str[strlen(str)], 63, 10);
-  uart_puts(UART0, str, strlen(str));
-  uart_puts(UART0, " Hz\n", 5);
+  printf("Running at %lu Hz\n", measure_cpu_freq(10000));
+  puts("Press ENTER to start cr2...");
+  getchar();
 
   cr2_init();
   cr2_thread_init(&thread1, 0, blink1);

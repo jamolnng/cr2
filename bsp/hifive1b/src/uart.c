@@ -3,6 +3,8 @@
 #include "clock.h"
 #include "gpio.h"
 
+#include <stdio.h>
+
 #define TXRX_EN 0x1u
 
 void uart_init(uart_t instance, uint32_t baud) {
@@ -36,8 +38,8 @@ void uart_putc(uart_t instance, char c) {
   mmio(instance, UART_REG_TX_DATA) = c;
 }
 
-void uart_puts(uart_t instance, const char* str, unsigned int len) {
-  for (unsigned int i = 0; i < len; ++i) {
+void uart_puts(uart_t instance, const char* str, unsigned int count) {
+  for (unsigned int i = 0; i < count; ++i) {
     uart_putc(instance, str[i]);
   }
 }
@@ -45,15 +47,22 @@ void uart_puts(uart_t instance, const char* str, unsigned int len) {
 int uart_getc(uart_t instance) {
   uint32_t mmval = mmio(instance, UART_REG_RX_DATA);
   if (mmval & UART_RX_DATA_EMPTY) {
-    return -1;  // EOF
+    return EOF;  // EOF
   } else {
     return mmval & 0x0FF;
   }
 }
 
-char* uart_gets(uart_t instance, char* str, int count) {
+int uart_getchar(uart_t instance) {
   int c;
-  int cur = 0;
+  while ((c = uart_getc(instance)) == EOF)
+    ;
+  return c;
+}
+
+char* uart_gets(uart_t instance, char* str, unsigned int count) {
+  int c;
+  unsigned int cur = 0;
   // EOF check
   for (;;) {
     if (cur == count) {
@@ -63,17 +72,17 @@ char* uart_gets(uart_t instance, char* str, int count) {
     if (c >= 0) {
       if (c == '\n' || c == '\r') {
         break;
-      } else if (c == 0x08) {
-        --cur;
-        if (cur < 0) {
-          cur = 0;
+      }
+      if (c == 0x08) {
+        if (cur > 0) {
+          --cur;
         }
       } else {
-        str[cur] = (char)c;
-        ++cur;
+        str[cur++] = (char)c;
       }
     }
   }
+  str[cur++] = '\n';
   str[cur] = '\0';
   return str;
 }
