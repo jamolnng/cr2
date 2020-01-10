@@ -1,5 +1,8 @@
 #ifndef __CR2_SPI_H__
 #define __CR2_SPI_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <memory_map.h>
 
@@ -76,4 +79,7 @@ uint8_t spi_read_byte(spi_t spi);
 void spi_read_bytes(spi_t spi, uint8_t* b, unsigned int count);
 void spi_transfer(spi_t spi, uint8_t* send, uint8_t* recv, unsigned int count);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

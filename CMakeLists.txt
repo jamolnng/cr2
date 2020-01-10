@@ -24,12 +24,16 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-project(cs2 VERSION 0.0.1 LANGUAGES C ASM)
+project(cs2 VERSION 0.0.1 LANGUAGES C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_RELEASE "-Os")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os")
 set(CMAKE_ASM_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 set(CMAKE_ASM_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
@@ -40,10 +44,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
     -Werror -Wno-unused -Winline -Wconversion -Wfloat-equal -ffreestanding -fdata-sections \
     -ffunction-sections -Wl,--gc-sections -specs=nano.specs -specs=nosys.specs")
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${bsp}/linker.ld\"")
 
-file(GLOB_RECURSE SOURCES "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
 file(GLOB_RECURSE PUBLIC_HEADERS "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 

@@ -1,5 +1,8 @@
 #ifndef __CS2_UART_H__
 #define __CS2_UART_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 
@@ -26,4 +29,7 @@ int uart_getc(uart_t instance);
 int uart_getchar(uart_t instance);
 char* uart_gets(uart_t instance, char* str, unsigned int count);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

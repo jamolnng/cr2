@@ -1,5 +1,8 @@
 #ifndef __CR2_CLOCK_H__
 #define __CR2_CLOCK_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,4 +19,7 @@ uint64_t get_timer_value();
 unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n);
 unsigned long get_cpu_freq();
 
+#ifdef __cplusplus
+}
+#endif
 #endif

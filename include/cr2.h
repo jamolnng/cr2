@@ -1,5 +1,8 @@
 #ifndef __CR2_CR2_H__
 #define __CR2_CR2_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 
@@ -30,4 +33,7 @@ void cr2_enter_critical_section(void);
 void cr2_exit_critical_section(void);
 void cr2_delay(uint32_t timeout);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
