@@ -69,3 +69,4 @@ set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.hex")
 set_target_properties(cr2asm PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.S")
 
 add_dependencies(cr2hex cr2)
+add_dependencies(cr2asm cr2)
