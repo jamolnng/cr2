@@ -19,6 +19,10 @@ int main();
 void blink1(void) {
   for (;;) {
     cr2_delay(200);
+    cr2_enter_critical_section();
+    unsigned long f = measure_cpu_freq(100);
+    cr2_exit_critical_section();
+    printf("Running at %lu Hz\n", f);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
@@ -41,10 +45,10 @@ cr2_thread_t thread2;
 cr2_thread_t thread3;
 
 int main() {
-  clock_init_hfxosc();
+  // clock_init_hfxosc();
+  // max f=38, min f=22
+  clock_init_hfpll(1, 22, 1);
   uart_init(UART0, 115200);
-  // max f=37
-  // clock_init_hfpll(1, 37, 1);
   gpio_reg(GPIO_REG_OUTPUT_VAL) |= RED_LED | GREEN_LED | BLUE_LED;
   gpio_reg(GPIO_REG_OUTPUT_EN) |= RED_LED | GREEN_LED | BLUE_LED;
 

@@ -10,9 +10,12 @@
 #define ROSC_EN 0x40000000u
 #define ROSC_RDY 0x80000000u
 
-#define PLL_R(x) ((x)&0x7u)
-#define PLL_F(x) (((x)&0x7Fu) << 4)
-#define PLL_Q(x) (((x)&0x3u) << 10)
+#define PLL_R 0x00000007UL
+#define PLL_F 0x000003F0UL
+#define PLL_Q 0x00000C00UL
+#define PLL_R_SHIFT(r) ((r << 0) & PLL_R)
+#define PLL_F_SHIFT(f) ((f << 4) & PLL_F)
+#define PLL_Q_SHIFT(q) ((q << 10) & PLL_Q)
 #define PLL_SEL 0x10000u
 #define PLL_HFXOSC_SEL 0x20000u
 #define PLL_BYPASS 0x40000u
@@ -40,7 +43,6 @@ void clock_init_hfrosc(unsigned int div, unsigned int trim) {
   prci_reg(PRCI_REG_PLL_CFG) &= ~PLL_SEL;
   // warm up clock
   measure_cpu_freq(100);
-  __asm__("fence.i");
 }
 
 void clock_init_hfxosc() {
@@ -59,7 +61,6 @@ void clock_init_hfxosc() {
   prci_reg(PRCI_REG_HFROSC) &= ~ROSC_EN;
   // warm up clock
   measure_cpu_freq(100);
-  __asm__("fence.i");
 }
 
 void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
@@ -69,7 +70,8 @@ void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
   // need to set QSPI clock divider temporarily
   qspi0_reg(SPI_REG_SCK_DIV) = 4;
   // configure pll
-  prci_reg(PRCI_REG_PLL_CFG) = (PLL_BYPASS | PLL_R(r) | PLL_F(f) | PLL_Q(q));
+  prci_reg(PRCI_REG_PLL_CFG) =
+      (PLL_BYPASS | PLL_R_SHIFT(r) | PLL_F_SHIFT(f) | PLL_Q_SHIFT(q));
 
   // switch to pll
   prci_reg(PRCI_REG_PLL_CFG) &= ~PLL_BYPASS;
@@ -84,7 +86,6 @@ void clock_init_hfpll(unsigned int r, unsigned int f, unsigned int q) {
   prci_reg(PRCI_REG_PLL_CFG) |= PLL_SEL;
   // warm up clock
   measure_cpu_freq(100);
-  __asm__("fence.i");
 
   // calculate new QSPI divisor for max performance
   unsigned long fin = get_cpu_freq();
@@ -115,8 +116,11 @@ unsigned long __attribute__((noinline)) measure_cpu_freq(size_t n) {
   __asm__ volatile("csrr %0, mcycle" : "=r"(tmp));
 
   unsigned long delta_mcycle = tmp - start_mcycle;
-  return (delta_mcycle / delta_mtime) * mtime_freq +
-         ((delta_mcycle % delta_mtime) * mtime_freq) / delta_mtime;
+  unsigned long ret = (delta_mcycle / delta_mtime) * mtime_freq +
+                      ((delta_mcycle % delta_mtime) * mtime_freq) / delta_mtime;
+  // __asm__("fence.i");
+  // __asm__("fence");
+  return ret;
 }
 
 unsigned long get_cpu_freq() { return measure_cpu_freq(50); }
