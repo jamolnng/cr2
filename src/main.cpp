@@ -40,9 +40,6 @@ void blink3(void) {
 cr2_thread_t thread1;
 cr2_thread_t thread2;
 cr2_thread_t thread3;
-cr2_stack_type_t stack1[128];
-cr2_stack_type_t stack2[128];
-cr2_stack_type_t stack3[128];
 
 int main() {
   printf("Running at %lu Hz\n", measure_cpu_freq(10000));
@@ -50,9 +47,9 @@ int main() {
   getchar();
 
   CR2 cr2;
-  cr2.add_thread(0, blink1, sizeof(stack1));
-  cr2.add_thread(1, blink2, sizeof(stack2));
-  cr2.add_thread(2, blink3, sizeof(stack3));
+  cr2.add_thread(0, blink1, 128);
+  cr2.add_thread(1, blink2, 128);
+  cr2.add_thread(2, blink3, 128);
   cr2.start();
 
   // thread1.stack = stack1;
