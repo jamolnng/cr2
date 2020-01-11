@@ -49,10 +49,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L\"${bsp}/\" -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${CMAKE_SOURCE_DIR}/linker.ld\"")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
-file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${bsp}/include/*.h" "libc/include/*.h")
+file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${bsp}/include/*.h")
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 
-add_executable(cr2 ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
+add_library(cr2 STATIC ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
 target_link_libraries(cr2 c gcc stdc++ g m nosys)
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
 target_include_directories(cr2 PUBLIC include "${bsp}/include")
@@ -62,20 +62,29 @@ set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/memory.ld")
 set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/stack_heap.ld")
 set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/global_ptr.ld")
 
-add_custom_target(cr2hex
-    ALL
-    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objcopy${CMAKE_EXECUTABLE_SUFFIX} -S -O ihex $<TARGET_FILE:cr2> "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
-)
+function(example name)
+    set(${ex_dir} "examples/${name}")
+    file(GLOB_RECURSE ${name}_SOURCES "${ex_dir}/src/*.cpp" "${ex_dir}/src/*.c" "${ex_dir}/src/*.S")
+    file(GLOB_RECURSE ${name}_PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${ex_dir}/include/*.h" "${ex_dir}/include/*.hpp")
+    file(GLOB_RECURSE ${name}_PRIVATE_HEADERS "src/*.h")
+    add_executable(${name} ${${name}_SOURCES} ${${name}_PUBLIC_HEADERS} ${${name}_PRIVATE_HEADERS})
+    target_link_libraries(${name} LINK_PUBLIC cr2)
+    add_custom_target(${name}hex
+         ALL
+         BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
+         COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objcopy${CMAKE_EXECUTABLE_SUFFIX} -S -O ihex $<TARGET_FILE:${name}> "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
+     )
+     add_custom_target(${name}asm
+         ALL
+         BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
+         COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dSC $<TARGET_FILE:${name}> > "${CMAKE_CURRENT_BINARY_DIR}/${name}.S"
+     )
+     set_target_properties(${name}hex PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.hex")
+     set_target_properties(${name}asm PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.S")
+     add_dependencies(${name} cr2)
+    add_dependencies(${name}hex cr2)
+    add_dependencies(${name}asm cr2)
+    set_target_properties(${name} PROPERTIES LINKER_LANGUAGE C)
+endfunction(example name)
 
-add_custom_target(cr2asm
-    ALL
-    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/cr2.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dSC $<TARGET_FILE:cr2> > "${CMAKE_CURRENT_BINARY_DIR}/cr2.S"
-)
-
-set_target_properties(cr2hex PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.hex")
-set_target_properties(cr2asm PROPERTIES ADDITIONAL_CLEAN_FILES "cr2.S")
-
-add_dependencies(cr2hex cr2)
-add_dependencies(cr2asm cr2)
+example(basic)

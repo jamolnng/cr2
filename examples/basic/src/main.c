@@ -40,30 +40,27 @@ void blink3(void) {
 cr2_thread_t thread1;
 cr2_thread_t thread2;
 cr2_thread_t thread3;
+cr2_stack_type_t stack1[128];
+cr2_stack_type_t stack2[128];
+cr2_stack_type_t stack3[128];
 
 int main() {
   printf("Running at %lu Hz\n", measure_cpu_freq(10000));
   puts("Press ENTER to start cr2...");
   getchar();
 
-  CR2 cr2;
-  cr2.add_thread(0, blink1, 128);
-  cr2.add_thread(1, blink2, 128);
-  cr2.add_thread(2, blink3, 128);
-  cr2.start();
+  thread1.stack = stack1;
+  thread2.stack = stack2;
+  thread3.stack = stack3;
+  thread1.stack_size = sizeof(stack1);
+  thread2.stack_size = sizeof(stack2);
+  thread3.stack_size = sizeof(stack3);
 
-  // thread1.stack = stack1;
-  // thread2.stack = stack2;
-  // thread3.stack = stack3;
-  // thread1.stack_size = 128;
-  // thread2.stack_size = 128;
-  // thread3.stack_size = 128;
-  //
-  // cr2_init();
-  // cr2_thread_init(&thread1, 0, blink1);
-  // cr2_thread_init(&thread2, 1, blink2);
-  // cr2_thread_init(&thread3, 2, blink3);
-  // cr2_start();
+  cr2_init();
+  cr2_thread_init(&thread1, 0, blink1);
+  cr2_thread_init(&thread2, 1, blink2);
+  cr2_thread_init(&thread3, 2, blink3);
+  cr2_start();
 
   // should not get here
 
