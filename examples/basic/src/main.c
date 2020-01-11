@@ -52,9 +52,9 @@ int main() {
   thread1.stack = stack1;
   thread2.stack = stack2;
   thread3.stack = stack3;
-  thread1.stack_size = sizeof(stack1);
-  thread2.stack_size = sizeof(stack2);
-  thread3.stack_size = sizeof(stack3);
+  thread1.stack_size = sizeof(stack1) / sizeof(cr2_stack_type_t);
+  thread2.stack_size = sizeof(stack2) / sizeof(cr2_stack_type_t);
+  thread3.stack_size = sizeof(stack3) / sizeof(cr2_stack_type_t);
 
   cr2_init();
   cr2_thread_init(&thread1, 0, blink1);
