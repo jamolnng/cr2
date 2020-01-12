@@ -16,10 +16,12 @@ typedef uint32_t cr2_stack_type_t;
 
 // Thread Control Block
 typedef struct {
-  void* stack_ptr __attribute__((aligned(4)));
-  uint32_t timeout __attribute__((aligned(4)));
+  void* stack_ptr;
   cr2_stack_type_t* stack;
   size_t stack_size;
+  unsigned char* queue;
+  size_t queue_size;
+  uint32_t timeout;
   unsigned int priority;
 } cr2_thread_t;
 
