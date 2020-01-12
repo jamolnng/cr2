@@ -37,9 +37,6 @@ _enter:
   .cfi_undefined ra
   # disable interrupts
   csrci mstatus, 8
-  lui   a5, 0x1
-  addi  a5, a5, -1366 # 0xaaa
-  csrc  mie, a5
 .option push
 .option norelax
   la    gp, __global_pointer$
@@ -120,3 +117,24 @@ abort:
 .section .rodata
 abort_msg:
   .string "ABORT!"
+
+.weak __bsp_specific_init__
+__bsp_specific_init__:
+  ret
+
+.weak __libc_fini_array
+__libc_fini_array:
+  ret
+
+.weak __libc_fini_array
+__libc_init_array:
+  ret
+
+.weak atexit
+atexit:
+  ret
+
+.weak exit
+exit:
+2:
+  j     2b

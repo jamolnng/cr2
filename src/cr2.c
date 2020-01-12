@@ -41,8 +41,6 @@ void cr2_init(void) {
   cr2_idle_thread.stack_size = CR2_IDLE_THREAD_STACK_SIZE;
   cr2_idle_thread.priority = CR2_MAX_THREADS;
   cr2_current_thread = &cr2_idle_thread;
-  memset(cr2_idle_thread.stack, 0,
-         cr2_idle_thread.stack_size * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr =
       &(cr2_idle_thread.stack[cr2_idle_thread.stack_size]);
   cr2_idle_thread.stack_ptr =
@@ -83,7 +81,6 @@ void cr2_thread_init(cr2_thread_t* t, unsigned int priority,
     // TODO: error
     return;
   }
-  memset(t->stack, 0, t->stack_size * sizeof(cr2_stack_type_t));
   cr2_stack_type_t* stack_ptr = &(t->stack[t->stack_size]);
   t->stack_ptr = cr2_thread_init_stack(stack_ptr, th);
   t->priority = priority;

@@ -15,10 +15,10 @@ int main();
 void blink1(void) {
   for (;;) {
     cr2_delay(2000);
-    cr2_enter_critical_section();
-    unsigned long f = measure_cpu_freq(100);
-    cr2_exit_critical_section();
-    printf("Running at %lu Hz\n", f);
+    // cr2_enter_critical_section();
+    // unsigned long f = measure_cpu_freq(100);
+    // cr2_exit_critical_section();
+    // printf("Running at %lu Hz\n", f);
     gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
   }
 }
@@ -45,9 +45,9 @@ cr2_stack_type_t stack2[128];
 cr2_stack_type_t stack3[128];
 
 int main() {
-  printf("Running at %lu Hz\n", measure_cpu_freq(10000));
-  puts("Press ENTER to start cr2...");
-  getchar();
+  // printf("Running at %lu Hz\n", measure_cpu_freq(10000));
+  // puts("Press ENTER to start cr2...");
+  // getchar();
 
   thread1.stack = stack1;
   thread2.stack = stack2;

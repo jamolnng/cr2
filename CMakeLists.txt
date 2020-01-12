@@ -53,7 +53,6 @@ file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${bsp}/include/*
 file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
 
 add_library(cr2 STATIC ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
-target_link_libraries(cr2 c gcc stdc++ g m nosys)
 target_include_directories(cr2 PRIVATE src "${bsp}/src")
 target_include_directories(cr2 PUBLIC include "${bsp}/include")
 set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${CMAKE_SOURCE_DIR}/linker.ld")
