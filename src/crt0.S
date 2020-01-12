@@ -85,12 +85,11 @@ bss_init_loop:
   addi  x26, x26, 4
   ble   x26, x27, bss_init_loop
 bss_init_end:
-
   # ctors and dtors
   la a0, __libc_fini_array
+  .global atexit
   call atexit
   call __libc_init_array
-
 main_entry:
   # ensure all data and instructions are done
   fence
@@ -103,38 +102,3 @@ main_entry:
   call  main
   call  exit
   .cfi_endproc
-
-.section .text
-.weak abort
-abort:
-  lui   a0, %hi(abort_msg)
-  addi  a0, a0, %lo(abort_msg)
-  jal   ra, puts
-2:
-  wfi
-  j     2b
-
-.section .rodata
-abort_msg:
-  .string "ABORT!"
-
-.weak __bsp_specific_init__
-__bsp_specific_init__:
-  ret
-
-.weak __libc_fini_array
-__libc_fini_array:
-  ret
-
-.weak __libc_fini_array
-__libc_init_array:
-  ret
-
-.weak atexit
-atexit:
-  ret
-
-.weak exit
-exit:
-2:
-  j     2b

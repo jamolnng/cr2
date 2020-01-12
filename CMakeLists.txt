@@ -46,27 +46,29 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}")
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L\"${bsp}/\" -ffunction-sections -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \"${CMAKE_SOURCE_DIR}/linker.ld\"")
-
-file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c" "src/*.S" "${bsp}/src/*.c" "${bsp}/src/*.S" "libc/src/*.c" "libc/src/*.S")
-file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp" "include/*.h" "${bsp}/include/*.h")
-file(GLOB_RECURSE PRIVATE_HEADERS "src/*.h")
-
-add_library(cr2 STATIC ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
-target_include_directories(cr2 PRIVATE src "${bsp}/src")
-target_include_directories(cr2 PUBLIC include "${bsp}/include")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${CMAKE_SOURCE_DIR}/linker.ld")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/sections.ld")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/memory.ld")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/stack_heap.ld")
-set_target_properties(cr2 PROPERTIES LINK_DEPENDS "${bsp}/global_ptr.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L\"${bsp}/\" -ffunction-sections \
+                           -Wl,--gc-sections -nostartfiles -nodefaultlibs -nostdlib -T \
+                           \"${CMAKE_SOURCE_DIR}/linker.ld\"")
 
 macro(example name)
-    file(GLOB_RECURSE ${name}_SOURCES "src/*.cpp" "src/*.c" "src/*.S")
-    file(GLOB_RECURSE ${name}_PUBLIC_HEADERS "include/*.hpp" "include/*.h")
+    file(GLOB_RECURSE ${name}_SOURCES
+        "${CMAKE_SOURCE_DIR}/src/*.c"
+        "${CMAKE_SOURCE_DIR}/src/*.S"
+        "src/*.cpp"
+        "src/*.c"
+        "src/*.S"
+        "${bsp}/src/*.c"
+        "${bsp}/src/*.S"
+    )
+    file(GLOB_RECURSE ${name}_PUBLIC_HEADERS
+        "${CMAKE_SOURCE_DIR}/include/*.h"
+        "include/*.hpp"
+        "include/*.h"
+    )
     file(GLOB_RECURSE ${name}_PRIVATE_HEADERS "src/*.h" "src/*.hpp")
     add_executable(${name} ${${name}_SOURCES} ${${name}_PUBLIC_HEADERS} ${${name}_PRIVATE_HEADERS})
-    target_link_libraries(${name} cr2)
+    target_link_libraries(${name} c gcc stdc++ g m nosys)
+    target_include_directories(${name} PUBLIC "${CMAKE_SOURCE_DIR}/include/" "include" "${bsp}/include")
     add_custom_target(${name}hex
         ALL
         BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
@@ -79,9 +81,13 @@ macro(example name)
     )
     set_target_properties(${name}hex PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.hex")
     set_target_properties(${name}asm PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.S")
-    add_dependencies(${name} cr2)
-    add_dependencies(${name}hex cr2)
-    add_dependencies(${name}asm cr2)
+    add_dependencies(${name}hex ${name})
+    add_dependencies(${name}asm ${name})
+    set_target_properties(${name} PROPERTIES LINK_DEPENDS "${CMAKE_SOURCE_DIR}/linker.ld")
+    set_target_properties(${name} PROPERTIES LINK_DEPENDS "${bsp}/sections.ld")
+    set_target_properties(${name} PROPERTIES LINK_DEPENDS "${bsp}/memory.ld")
+    set_target_properties(${name} PROPERTIES LINK_DEPENDS "${bsp}/stack_heap.ld")
+    set_target_properties(${name} PROPERTIES LINK_DEPENDS "${bsp}/global_ptr.ld")
 endmacro(example)
 
 add_subdirectory(examples)
