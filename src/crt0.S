@@ -105,7 +105,7 @@ main_entry:
   .cfi_endproc
 
 .section .text
-.global abort
+.weak abort
 abort:
   lui   a0, %hi(abort_msg)
   addi  a0, a0, %lo(abort_msg)
