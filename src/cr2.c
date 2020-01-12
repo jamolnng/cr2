@@ -112,7 +112,7 @@ void cr2_delay(uint32_t timeout) {
 
 void cr2_sys_interrupt_handler(uintptr_t mcause) {
   mcause = mcause & MCAUSE_CAUSE;
-  if ((mcause == IRQ_M_TIMER)) {
+  if (mcause == IRQ_M_TIMER) {
     cr2_tick();
     cr2_set_timer();
     cr2_schedule();
