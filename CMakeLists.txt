@@ -68,14 +68,14 @@ macro(example name)
     add_executable(${name} ${${name}_SOURCES} ${${name}_PUBLIC_HEADERS} ${${name}_PRIVATE_HEADERS})
     target_link_libraries(${name} cr2)
     add_custom_target(${name}hex
-    ALL
-    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objcopy${CMAKE_EXECUTABLE_SUFFIX} -S -O ihex $<TARGET_FILE:${name}> "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
+        ALL
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
+        COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objcopy${CMAKE_EXECUTABLE_SUFFIX} -S -O ihex $<TARGET_FILE:${name}> "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
     )
     add_custom_target(${name}asm
-    ALL
-    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.hex"
-    COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dSC $<TARGET_FILE:${name}> > "${CMAKE_CURRENT_BINARY_DIR}/${name}.S"
+        ALL
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/${name}.S"
+        COMMAND ${tools_dir}/riscv64-unknown-elf-gcc/bin/riscv64-unknown-elf-objdump${CMAKE_EXECUTABLE_SUFFIX} -dSC $<TARGET_FILE:${name}> > "${CMAKE_CURRENT_BINARY_DIR}/${name}.S"
     )
     set_target_properties(${name}hex PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.hex")
     set_target_properties(${name}asm PROPERTIES ADDITIONAL_CLEAN_FILES "${name}.S")
