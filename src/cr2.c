@@ -111,16 +111,14 @@ void cr2_delay(uint32_t timeout) {
 }
 
 void cr2_sys_interrupt_handler(uintptr_t mcause) {
-  if (((mcause & MCAUSE_CAUSE) == IRQ_M_TIMER)) {
+  mcause = mcause & MCAUSE_CAUSE;
+  if ((mcause == IRQ_M_TIMER)) {
     cr2_tick();
     cr2_set_timer();
     cr2_schedule();
   } else {
-    for (;;) {
-      for (int i = 0; i < 100000; ++i)
-        ;
-      gpio_reg(GPIO_REG_OUTPUT_VAL) ^= BLUE_LED;
-    }
+    for (;;)
+      ;
   }
 }
 
@@ -128,11 +126,8 @@ void cr2_sys_exception_handler(uintptr_t mcause) {
   if (mcause == ERQ_M_ECALL) {
     cr2_schedule();
   } else {
-    for (;;) {
-      for (int i = 0; i < 100000; ++i)
-        ;
-      gpio_reg(GPIO_REG_OUTPUT_VAL) ^= RED_LED;
-    }
+    for (;;)
+      ;
   }
 }
 
